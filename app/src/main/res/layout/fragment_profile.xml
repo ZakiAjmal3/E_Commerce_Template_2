@@ -1,0 +1,214 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:background="@color/white">
+
+    <TextView
+        android:id="@+id/profileTxt"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Profile"
+        android:fontFamily="@font/poppins"
+        android:textSize="25sp"
+        android:textColor="@color/black"
+        android:textStyle="bold"
+        android:layout_margin="20dp"/>
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/nameEmailCardView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/profileTxt"
+        android:layout_marginLeft="20dp"
+        android:layout_marginRight="20dp"
+        android:layout_marginBottom="20dp"
+        app:cardBackgroundColor="@color/white"
+        app:cardCornerRadius="5dp"
+        app:strokeColor="@color/light_dark_grey"
+        app:strokeWidth="1dp"
+        >
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:padding="15dp">
+        <de.hdodenhof.circleimageview.CircleImageView
+            android:id="@+id/profileImgV"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:src="@drawable/ic_casual_bg"/>
+        <RelativeLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="15dp"
+            android:layout_toRightOf="@id/profileImgV"
+
+            android:layout_centerVertical="true">
+            <TextView
+                android:id="@+id/userNameTxt"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="User Name"
+                android:textColor="@color/black"
+                android:textStyle="bold"
+                android:textSize="18sp"/>
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="UserEmail123@gmail.com"
+                android:layout_below="@id/userNameTxt"
+                android:textColor="@color/black"
+                android:textSize="16sp"/>
+        </RelativeLayout>
+        <ImageView
+            android:id="@+id/editNameBtn"
+            android:layout_width="20dp"
+            android:layout_height="20dp"
+            android:padding="3dp"
+            android:layout_alignParentEnd="true"
+            android:src="@drawable/ic_edit"
+            android:foreground="?android:attr/selectableItemBackgroundBorderless"/>
+        </RelativeLayout>
+    </com.google.android.material.card.MaterialCardView>
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/allDetailsCardView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/nameEmailCardView"
+        android:layout_marginLeft="20dp"
+        android:layout_marginRight="20dp"
+        android:layout_marginBottom="20dp"
+        app:cardBackgroundColor="@color/white"
+        app:cardCornerRadius="5dp"
+        app:strokeColor="@color/light_dark_grey"
+        app:strokeWidth="1dp">
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:padding="15dp">
+            <ImageView
+                android:id="@+id/editNameBtn2"
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:padding="3dp"
+                android:layout_alignParentEnd="true"
+                android:src="@drawable/ic_edit"
+                android:foreground="?android:attr/selectableItemBackgroundBorderless"/>
+            <TextView
+                android:id="@+id/personalInfoTxt"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Personal Information"
+                android:fontFamily="@font/poppins"
+                android:textSize="18sp"
+                android:textColor="@color/black"
+                android:textStyle="bold" />
+            <TextView
+                android:id="@+id/firstNameTxt"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="First Name"
+                android:layout_below="@id/personalInfoTxt"
+                android:fontFamily="@font/poppins"
+                android:textSize="14sp"
+                android:layout_marginTop="20dp"
+                android:textColor="@color/dark_gray"
+                android:textStyle="bold" />
+            <TextView
+                android:id="@+id/firstNameDisplayTxt"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="First Name"
+                android:fontFamily="@font/poppins"
+                android:layout_below="@id/firstNameTxt"
+                android:textSize="14sp"
+                android:textColor="@color/black"
+                android:textStyle="bold" />
+            <TextView
+                android:id="@+id/lastNameTxt"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Last Name"
+                android:layout_below="@id/firstNameDisplayTxt"
+                android:fontFamily="@font/poppins"
+                android:textSize="14sp"
+                android:layout_marginTop="20dp"
+                android:textColor="@color/dark_gray"
+                android:textStyle="bold" />
+            <TextView
+                android:id="@+id/lastNameDisplayTxt"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Last Name"
+                android:fontFamily="@font/poppins"
+                android:layout_below="@id/lastNameTxt"
+                android:textSize="14sp"
+                android:textColor="@color/black"
+                android:textStyle="bold" />
+            <TextView
+                android:id="@+id/emailTxt"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Email"
+                android:layout_below="@id/lastNameDisplayTxt"
+                android:fontFamily="@font/poppins"
+                android:textSize="14sp"
+                android:layout_marginTop="20dp"
+                android:textColor="@color/dark_gray"
+                android:textStyle="bold" />
+            <TextView
+                android:id="@+id/emailDisplayTxt"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Email"
+                android:fontFamily="@font/poppins"
+                android:layout_below="@id/emailTxt"
+                android:textSize="14sp"
+                android:textColor="@color/black"
+                android:textStyle="bold" />
+            <TextView
+                android:id="@+id/phoneTxt"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Phone"
+                android:layout_below="@id/emailDisplayTxt"
+                android:fontFamily="@font/poppins"
+                android:textSize="14sp"
+                android:layout_marginTop="20dp"
+                android:textColor="@color/dark_gray"
+                android:textStyle="bold" />
+            <TextView
+                android:id="@+id/phoneDisplayTxt"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="+9123456789"
+                android:fontFamily="@font/poppins"
+                android:layout_below="@id/phoneTxt"
+                android:textSize="14sp"
+                android:textColor="@color/black"
+                android:textStyle="bold" />
+            <TextView
+                android:id="@+id/ageTxt"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Age"
+                android:layout_below="@id/phoneDisplayTxt"
+                android:fontFamily="@font/poppins"
+                android:textSize="14sp"
+                android:layout_marginTop="20dp"
+                android:textColor="@color/dark_gray"
+                android:textStyle="bold" />
+            <TextView
+                android:id="@+id/ageDisplayTxt"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="24 Years"
+                android:fontFamily="@font/poppins"
+                android:layout_below="@id/ageTxt"
+                android:textSize="14sp"
+                android:textColor="@color/black"
+                android:textStyle="bold" />
+
+        </RelativeLayout>
+    </com.google.android.material.card.MaterialCardView>
+</RelativeLayout>

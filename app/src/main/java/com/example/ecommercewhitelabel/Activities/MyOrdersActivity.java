@@ -2,6 +2,7 @@ package com.example.ecommercewhitelabel.Activities;
 
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
+import android.os.Build;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.ArrayAdapter;
@@ -36,7 +37,17 @@ public class MyOrdersActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_my_orders);
-//        getWindow().setStatusBarColor(ContextCompat.getColor(MyOrdersActivity.this, R.color.black));
+
+        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE){
+            EdgeToEdge.enable(this);
+            ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
+                Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
+                v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
+                return insets;
+            });
+        }
+        getWindow().setStatusBarColor(ContextCompat.getColor(this,R.color.black));
+//        getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR);
 
         backBtn = findViewById(R.id.imgBack);
         myOrderRecyclerView = findViewById(R.id.myOrderRecyclerView);

@@ -49,10 +49,19 @@ public class CheckOutOrderActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_check_out_order);
 
-//        getWindow().setStatusBarColor(ContextCompat.getColor(this,R.color.black));
+        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE){
+            EdgeToEdge.enable(this);
+            ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
+                Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
+                v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
+                return insets;
+            });
+        }
+        getWindow().setStatusBarColor(ContextCompat.getColor(this,R.color.black));
+//        getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR);
 
         noDataLayout = findViewById(R.id.noDataLayout);
-        mainLayout = findViewById(R.id.main);
+        mainLayout = findViewById(R.id.mainLayout);
 
         backBtn = findViewById(R.id.imgMenu);
         checkoutRecyclerView = findViewById(R.id.checkoutRecyclerView);

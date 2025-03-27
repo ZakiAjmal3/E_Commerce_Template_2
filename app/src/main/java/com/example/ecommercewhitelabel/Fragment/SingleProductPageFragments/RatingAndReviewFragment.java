@@ -56,8 +56,6 @@ public class RatingAndReviewFragment extends Fragment {
         ratingAndReviewArrayList.add(new RatingAndReviewModel("3.5","Alex k.","Posted on August 14,2024","Product description"));
         ratingAndReviewArrayList.add(new RatingAndReviewModel("1.5","Zaki Ajmal","Posted on October 14,2024","Product description"));
         ratingAndReviewArrayList.add(new RatingAndReviewModel("5","Alex k.","Posted on August 14,2024","Product description"));
-        ratingAndReviewArrayList.add(new RatingAndReviewModel("3.5","Alex k.","Posted on August 14,2024","Product description"));
-        ratingAndReviewArrayList.add(new RatingAndReviewModel("3.5","Alex k.","Posted on August 14,2024","Product description"));
 
         reviewRecyclerView.setAdapter(new RatingAndReviewAdapter(ratingAndReviewArrayList, getContext()));
 

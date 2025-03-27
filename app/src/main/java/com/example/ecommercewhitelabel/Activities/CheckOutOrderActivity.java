@@ -1,6 +1,7 @@
 package com.example.ecommercewhitelabel.Activities;
 
 import android.app.Dialog;
+import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Build;
@@ -9,13 +10,19 @@ import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.Window;
 import android.view.WindowManager;
+import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.RadioButton;
+import android.widget.RadioGroup;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.cardview.widget.CardView;
 import androidx.core.content.ContextCompat;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
@@ -24,26 +31,47 @@ import androidx.core.widget.NestedScrollView;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.android.volley.AuthFailureError;
+import com.android.volley.Request;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.JsonObjectRequest;
 import com.example.ecommercewhitelabel.Adapter.CheckOutAdapter;
 import com.example.ecommercewhitelabel.Adapter.CheckOutAddressChangingRVAdapter;
 import com.example.ecommercewhitelabel.Fragment.CartItemFragment;
-import com.example.ecommercewhitelabel.Fragment.ProfileFragment;
 import com.example.ecommercewhitelabel.Model.AddressItemModel;
 import com.example.ecommercewhitelabel.Model.CartItemModel;
 import com.example.ecommercewhitelabel.Model.CheckOutModel;
 import com.example.ecommercewhitelabel.R;
+import com.example.ecommercewhitelabel.Utils.Constant;
+import com.example.ecommercewhitelabel.Utils.MySingleton;
+import com.example.ecommercewhitelabel.Utils.SessionManager;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 public class CheckOutOrderActivity extends AppCompatActivity {
+    Button proceedToPayment;
     ImageView backBtn;
     RecyclerView checkoutRecyclerView;
     TextView subTotalDisplayTxt, discountDisplayTxt, deliveryFeeDisplayTxt, totalAmountDisplayTxt,changeAddressTxtBtn;
-    TextView addressLine1Txt, addressLine2Txt, addressLine3Txt;
+    TextView loginUserName,addressLine1Txt, addressLine2Txt, addressLine3Txt;
     ArrayList<CheckOutModel> checkOutModelArrayList;
     ArrayList<CartItemModel> cartItemModelArrayList;
+    ArrayList<AddressItemModel> addressItemArrayList = new ArrayList<>();
     RelativeLayout noDataLayout;
     NestedScrollView mainLayout;
+    SessionManager sessionManager;
+    String authToken;
+    Dialog progressBarDialog;
+    RadioGroup radioGroup;
+    RadioButton radio1, radio2;
+    String paymentMethodStr = null,selectedAddressId = null;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -59,6 +87,8 @@ public class CheckOutOrderActivity extends AppCompatActivity {
         }
         getWindow().setStatusBarColor(ContextCompat.getColor(this,R.color.black));
 //        getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR);
+        sessionManager = new SessionManager(CheckOutOrderActivity.this);
+        authToken = sessionManager.getUserData().get("authToken");
 
         noDataLayout = findViewById(R.id.noDataLayout);
         mainLayout = findViewById(R.id.mainLayout);
@@ -78,8 +108,7 @@ public class CheckOutOrderActivity extends AppCompatActivity {
         checkoutRecyclerView.setLayoutManager(new LinearLayoutManager(this));
         checkOutModelArrayList = new ArrayList<>();
         cartItemModelArrayList = new ArrayList<>();
-
-
+        getAllAddress();
         CartItemFragment fragment = (CartItemFragment) HomePageActivity.getCurrentFragment();
         if (fragment != null) {
             cartItemModelArrayList = fragment.getCartItemModelArrayList();
@@ -88,9 +117,12 @@ public class CheckOutOrderActivity extends AppCompatActivity {
         }
 
         for (int i = 0; i < cartItemModelArrayList.size(); i++) {
+            String cartId = cartItemModelArrayList.get(i).getCartId();
+            String productId = cartItemModelArrayList.get(i).getProductId();
             String name = cartItemModelArrayList.get(i).getProductTitle();
             String price = cartItemModelArrayList.get(i).getProductPrice();
-            checkOutModelArrayList.add(new CheckOutModel(name,price,null));
+            String quantity = cartItemModelArrayList.get(i).getProductQuantity();
+            checkOutModelArrayList.add(new CheckOutModel(cartId,productId,name,price,quantity,null));
         }
 
         checkoutRecyclerView.setAdapter(new CheckOutAdapter(checkOutModelArrayList,this));
@@ -104,14 +136,59 @@ public class CheckOutOrderActivity extends AppCompatActivity {
         checkOutItemArraySize();
 
         // Address Showing Setup
+        loginUserName = findViewById(R.id.loginUserName);
         addressLine1Txt = findViewById(R.id.addressLine1);
         addressLine2Txt = findViewById(R.id.addressLine2);
         addressLine3Txt = findViewById(R.id.addressLine3);
+
+        String name = sessionManager.getUserData().get("fullName");
+        String phone = sessionManager.getUserData().get("email");
+        loginUserName.setText(name + ", " + phone);
+
+        // Radio Group
+        proceedToPayment = findViewById(R.id.proceedToPayment);
+        radioGroup = findViewById(R.id.radioGroup);
+        radio1 = findViewById(R.id.radio1);
+        radio2 = findViewById(R.id.radio2);
+
+        radioGroup.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(RadioGroup group, int checkedId) {
+                if (checkedId == R.id.radio1) {
+                    paymentMethodStr = "COD";
+                } else if (checkedId == R.id.radio2) {
+                    paymentMethodStr = "RazorPay";
+                }
+            }
+        });
+
+        proceedToPayment.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                progressBarDialog = new Dialog(CheckOutOrderActivity.this);
+                progressBarDialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
+                progressBarDialog.setContentView(R.layout.progress_bar_dialog);
+                progressBarDialog.setCancelable(false);
+                progressBarDialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+                progressBarDialog.getWindow().setGravity(Gravity.CENTER); // Center the dialog
+                progressBarDialog.getWindow().setLayout(WindowManager.LayoutParams.WRAP_CONTENT, WindowManager.LayoutParams.WRAP_CONTENT); // Adjust the size
+                progressBarDialog.show();
+                if (paymentMethodStr.isEmpty()){
+                    progressBarDialog.dismiss();
+                    Toast.makeText(CheckOutOrderActivity.this, "Please Select Payment Method", Toast.LENGTH_SHORT).show();
+                }else if (selectedAddressId.isEmpty()){
+                    progressBarDialog.dismiss();
+                    Toast.makeText(CheckOutOrderActivity.this, "Please Select Address", Toast.LENGTH_SHORT).show();
+                }else {
+                    checkOut();
+                }
+            }
+        });
     }
     Dialog drawerDialog;
     ImageView crossBtn;
     RecyclerView addressRV;
-    ArrayList<AddressItemModel> addressItemModelArrayList;
+    CardView addAddressCardView;
     public void openEditDialog() {
         drawerDialog = new Dialog(CheckOutOrderActivity.this);
         drawerDialog.setContentView(R.layout.checkout_change_address_dialog);
@@ -122,13 +199,21 @@ public class CheckOutOrderActivity extends AppCompatActivity {
             drawerDialog.dismiss();
         });
 
+        addAddressCardView = drawerDialog.findViewById(R.id.addAddressCardView);
+        addAddressCardView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(CheckOutOrderActivity.this, AddressShowingInputActivity.class);
+                intent.putExtra("openAddAddress",true);
+                startActivity(intent);
+                finish();
+            }
+        });
+
         addressRV = drawerDialog.findViewById(R.id.addressItemLayout);
         addressRV.setLayoutManager(new LinearLayoutManager(CheckOutOrderActivity.this));
-        addressItemModelArrayList = new ArrayList<>();
-        addressItemModelArrayList.add(new AddressItemModel("Amanda","Qwerty" ,"9876543210","amanda@example.com","123","home","city","123456","state","country"));
-        addressItemModelArrayList.add(new AddressItemModel("Amanda2","Qwerty2" ,"9876543210","amanda@example.com","124","home2","city2","123456","state2","country2"));
 
-        addressRV.setAdapter(new CheckOutAddressChangingRVAdapter(addressItemModelArrayList,CheckOutOrderActivity.this));
+        addressRV.setAdapter(new CheckOutAddressChangingRVAdapter(addressItemArrayList,CheckOutOrderActivity.this));
 
         drawerDialog.show();
         drawerDialog.getWindow().setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
@@ -140,17 +225,80 @@ public class CheckOutOrderActivity extends AppCompatActivity {
             drawerDialog.getWindow().setStatusBarColor(ContextCompat.getColor(CheckOutOrderActivity.this,R.color.white));
         }
     }
+    private void getAllAddress() {
+        String addAddressURL = Constant.BASE_URL + "address";
+        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, addAddressURL, null,
+                new Response.Listener<JSONObject>() {
+                    @Override
+                    public void onResponse(JSONObject response) {
+                        try {
+                            addressItemArrayList.clear();
+                            JSONArray dataJSONAry = response.getJSONArray("data");
+                            for (int i = 0; i < dataJSONAry.length(); i++) {
+                                JSONObject dataObject = dataJSONAry.getJSONObject(i);
+                                String addressId = dataObject.getString("_id");
+                                String addressType = dataObject.getString("addressType");
+                                String firstName = dataObject.getString("firstName");
+                                String lastName = dataObject.getString("lastName");
+                                String country = dataObject.getString("country");
+                                String streetAddress = dataObject.getString("streetAddress");
+                                String apartment = dataObject.getString("apartment");
+                                String city = dataObject.getString("city");
+                                String state = dataObject.getString("state");
+                                String pincode = dataObject.getString("pincode");
+                                String phone = dataObject.getString("phone");
+                                String email = dataObject.getString("email");
+                                String isDefault = dataObject.getString("isDefault");
+                                addressItemArrayList.add(new AddressItemModel(addressId,addressType,firstName,lastName,null,phone,email,apartment,streetAddress,city,pincode,state,country,isDefault));
+                            }
+                            setAddress();
+                        } catch (JSONException e) {
+                            Log.e("Exam Catch error", "Error parsing JSON: " + e.getMessage());
+                        }
+                    }
+                },
+                new Response.ErrorListener() {
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+                        String errorMessage = "Error: " + error.toString();
+                        if (error.networkResponse != null) {
+                            try {
+                                // Parse the error response
+                                String jsonError = new String(error.networkResponse.data);
+                                JSONObject jsonObject = new JSONObject(jsonError);
+                                String message = jsonObject.optString("message", "Unknown error");
+                                // Now you can use the message
+                                Toast.makeText(CheckOutOrderActivity.this, message, Toast.LENGTH_LONG).show();
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            }
+                        }
+                        Log.e("ExamListError", errorMessage);
+                    }
+                }) {
+            @Override
+            public Map<String, String> getHeaders() throws AuthFailureError {
+                Map<String, String> headers = new HashMap<>();
+                headers.put("Content-Type", "application/json");
+                headers.put("Authorization", "Bearer " + authToken);
+                return headers;
+            }
+        };
+        MySingleton.getInstance(this).addToRequestQueue(jsonObjectRequest);
+    }
+    int totalAmount = 0,finalTotalAmount = 0,shippingCharge = 0,discount = 0;
     public void setOrderSummaryDetails() {
-        int totalAmount = 0,finalTotalAmount = 0,shippingCharge = 0,discount = 0;
-
+        discount = getIntent().getIntExtra("additionDiscount",0);
         for (int i = 0; i < checkOutModelArrayList.size(); i++) {
             totalAmount += Integer.parseInt(checkOutModelArrayList.get(i).getProductPrice()) * Integer.parseInt(cartItemModelArrayList.get(i).getProductQuantity());
         }
         if (totalAmount > 500){
             finalTotalAmount = totalAmount;
         }else {
+            shippingCharge = 99;
             finalTotalAmount = totalAmount + 99;
         }
+        finalTotalAmount -= discount;
         subTotalDisplayTxt.setText("₹" + String.valueOf(totalAmount) + ".00");
         totalAmountDisplayTxt.setText("₹" + String.valueOf(finalTotalAmount) + ".00");
         discountDisplayTxt.setText("-₹" + String.valueOf(discount) + ".00");
@@ -165,10 +313,136 @@ public class CheckOutOrderActivity extends AppCompatActivity {
             noDataLayout.setVisibility(View.GONE);
         }
     }
-    public void setAddress(String addressLine1,String addressLine2,String addressLine3) {
+    public void setAddressFromAdapter(String addressLine1, String addressLine2, String addressLine3, String addressId) {
         addressLine1Txt.setText(addressLine1);
         addressLine2Txt.setText(addressLine2);
         addressLine3Txt.setText(addressLine3);
+        selectedAddressId = addressId;
         drawerDialog.dismiss();
+    }
+    public void setAddress() {
+        String addressLine1, addressLine2, addressLine3;
+
+        addressLine1 = addressItemArrayList.get(0).getFirstName() + " " +
+                addressItemArrayList.get(0).getLastName()+ "," +
+                addressItemArrayList.get(0).getPhone();
+        addressLine2 = addressItemArrayList.get(0).getApartment() + ", " +
+                addressItemArrayList.get(0).getStreet() + ", " +
+                addressItemArrayList.get(0).getCity() + ", " +
+                addressItemArrayList.get(0).getPincode();
+        addressLine3 = addressItemArrayList.get(0).getState() + ", " +
+                addressItemArrayList.get(0).getCountry();
+        selectedAddressId = addressItemArrayList.get(0).getAddressId();
+
+        addressLine1Txt.setText(addressLine1);
+        addressLine2Txt.setText(addressLine2);
+        addressLine3Txt.setText(addressLine3);
+    }
+    public void checkOut() {
+        String addAddressURL = Constant.BASE_URL + "order/checkout";
+
+        JSONObject jsonObject = new JSONObject();
+        try {
+            jsonObject.put("totalAmount", totalAmount);
+            jsonObject.put("shippingCharges", shippingCharge);
+            jsonObject.put("taxAmount", 0);
+            jsonObject.put("discounts", discount);
+            jsonObject.put("finalAmount", finalTotalAmount);
+            jsonObject.put("paymentMethod", paymentMethodStr);
+            jsonObject.put("addressId", selectedAddressId);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.POST, addAddressURL, jsonObject,
+                new Response.Listener<JSONObject>() {
+                    @Override
+                    public void onResponse(JSONObject response) {
+                        JSONObject orderObject = response.optJSONObject("order");
+                        String orderId = orderObject.optString("id");
+
+                        if (paymentMethodStr.equals("COD")){
+                            placeCODOrder(orderId);
+                        }
+                    }
+                },
+                new Response.ErrorListener() {
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+                        progressBarDialog.dismiss();
+                        String errorMessage = "Error: " + error.toString();
+                        if (error.networkResponse != null) {
+                            try {
+                                // Parse the error response
+                                String jsonError = new String(error.networkResponse.data);
+                                JSONObject jsonObject = new JSONObject(jsonError);
+                                String message = jsonObject.optString("message", "Unknown error");
+                                // Now you can use the message
+                                Toast.makeText(CheckOutOrderActivity.this, message, Toast.LENGTH_LONG).show();
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            }
+                        }
+                        Log.e("ExamListError", errorMessage);
+                    }
+                }) {
+            @Override
+            public Map<String, String> getHeaders() throws AuthFailureError {
+                Map<String, String> headers = new HashMap<>();
+                headers.put("Content-Type", "application/json");
+                headers.put("Authorization", "Bearer " + authToken);
+                return headers;
+            }
+        };
+        MySingleton.getInstance(this).addToRequestQueue(jsonObjectRequest);
+    }
+
+    private void placeCODOrder(String orderId) {
+        String addAddressURL = Constant.BASE_URL + "order/cod";
+
+        JSONObject jsonObject = new JSONObject();
+        try {
+            jsonObject.put("orderId", orderId);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, addAddressURL, null,
+                new Response.Listener<JSONObject>() {
+                    @Override
+                    public void onResponse(JSONObject response) {
+                        progressBarDialog.dismiss();
+                        startActivity(new Intent(CheckOutOrderActivity.this, OrderPlacedActivity.class));
+                    }
+                },
+                new Response.ErrorListener() {
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+                        progressBarDialog.dismiss();
+                        String errorMessage = "Error: " + error.toString();
+                        if (error.networkResponse != null) {
+                            try {
+                                // Parse the error response
+                                String jsonError = new String(error.networkResponse.data);
+                                JSONObject jsonObject = new JSONObject(jsonError);
+                                String message = jsonObject.optString("message", "Unknown error");
+                                // Now you can use the message
+                                Toast.makeText(CheckOutOrderActivity.this, message, Toast.LENGTH_LONG).show();
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            }
+                        }
+                        Log.e("ExamListError", errorMessage);
+                    }
+                }) {
+            @Override
+            public Map<String, String> getHeaders() throws AuthFailureError {
+                Map<String, String> headers = new HashMap<>();
+                headers.put("Content-Type", "application/json");
+                headers.put("Authorization", "Bearer " + authToken);
+                return headers;
+            }
+        };
+        MySingleton.getInstance(this).addToRequestQueue(jsonObjectRequest);
     }
 }

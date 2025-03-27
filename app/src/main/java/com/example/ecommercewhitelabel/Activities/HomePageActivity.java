@@ -15,6 +15,7 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
 import androidx.annotation.NonNull;
@@ -33,6 +34,7 @@ import com.example.ecommercewhitelabel.Fragment.ProfileFragment;
 import com.example.ecommercewhitelabel.Fragment.SearchFragment;
 import com.example.ecommercewhitelabel.Fragment.WishListFragment;
 import com.example.ecommercewhitelabel.R;
+import com.example.ecommercewhitelabel.Utils.SessionManager;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.navigation.NavigationBarView;
 
@@ -42,6 +44,8 @@ public class HomePageActivity extends AppCompatActivity {
     RecyclerView casualDressRecyclerView;
     BottomNavigationView bottomNavigationView;
     Boolean loadOtherFragment = false;
+    SessionManager sessionManager;
+    String storeId,authToken;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -57,6 +61,9 @@ public class HomePageActivity extends AppCompatActivity {
         }
         getWindow().setStatusBarColor(ContextCompat.getColor(HomePageActivity.this, R.color.black));
 //        getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR);
+
+        sessionManager = new SessionManager(this);
+        storeId = sessionManager.getStoreId();
 
         loadFragment(new HomePageFragment());
 
@@ -91,7 +98,11 @@ public class HomePageActivity extends AppCompatActivity {
                 }else if (item.getItemId() == R.id.cart){
                     loadFragment(new CartItemFragment());
                 }else if (item.getItemId() == R.id.profile){
-                    loadFragment(new ProfileFragment());
+                    if (sessionManager.isLoggedIn()) {
+                        loadFragment(new ProfileFragment());
+                    }else {
+                        startActivity(new Intent(HomePageActivity.this, LoginActivity.class));
+                    }
                 }
                 return true;
             }
@@ -107,7 +118,7 @@ public class HomePageActivity extends AppCompatActivity {
     }
     Dialog drawerDialog;
     CardView cardBack;
-    RelativeLayout layoutShop, layoutOnSale, layoutNewArrivals, layoutEBrands, layoutMyAccount, layoutLogin;
+    RelativeLayout layoutShop, layoutOnSale, layoutNewArrivals, layoutEBrands, layoutMyAccount, layoutLogin, layoutLogout;
     TextView mensClothesTxt, womensClothesTxt, kidsClothesTxt, bagsAndShoesTxt, profileTxt, ordersTxt,
             addressTxt, wishListTxt;
     LinearLayout myAccountItemsDropdown, shopItemsDropdown;
@@ -125,6 +136,7 @@ public class HomePageActivity extends AppCompatActivity {
         layoutEBrands = drawerDialog.findViewById(R.id.layoutEBrands);
         layoutMyAccount = drawerDialog.findViewById(R.id.layoutMyAccount);
         layoutLogin = drawerDialog.findViewById(R.id.layoutLogin);
+        layoutLogout = drawerDialog.findViewById(R.id.layoutLogout);
         myAccountItemsDropdown = drawerDialog.findViewById(R.id.myAccountItemsDropdown);
         shopItemsDropdown = drawerDialog.findViewById(R.id.shopItemsDropdown);
         shopItemsDropdown.setVisibility(View.GONE);
@@ -138,6 +150,14 @@ public class HomePageActivity extends AppCompatActivity {
         ordersTxt = drawerDialog.findViewById(R.id.ordersTxt);
         addressTxt = drawerDialog.findViewById(R.id.addressTxt);
         wishListTxt = drawerDialog.findViewById(R.id.wishListTxt);
+
+        if (sessionManager.isLoggedIn()){
+            layoutLogin.setVisibility(View.GONE);
+            layoutLogout.setVisibility(View.VISIBLE);
+        }else {
+            layoutLogin.setVisibility(View.VISIBLE);
+            layoutLogout.setVisibility(View.GONE);
+        }
 
         cardBack.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -190,6 +210,16 @@ public class HomePageActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 startActivity(new Intent(HomePageActivity.this,LoginActivity.class));
+            }
+        });
+        layoutLogout.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                sessionManager.logout();
+                Toast.makeText(HomePageActivity.this, "Logged out SuccessFully", Toast.LENGTH_SHORT).show();
+                Intent intent = new Intent(HomePageActivity.this,MainActivity.class);
+                startActivity(intent);
+                finish();
             }
         });
         mensClothesTxt.setOnClickListener(new View.OnClickListener() {

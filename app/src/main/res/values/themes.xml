@@ -18,4 +18,8 @@
         <item name="android:windowEnterAnimation">@anim/checkoutaddressdialogentry</item>
         <item name="android:windowExitAnimation">@anim/checkoutaddressdialogexit</item>
     </style>
+    <style name="DialogAnimationDisplayBottomTop">
+        <item name="android:windowEnterAnimation">@anim/bottomtotop</item>
+        <item name="android:windowExitAnimation">@anim/toptobottom</item>
+    </style>
 </resources>

@@ -39,48 +39,26 @@
             android:textSize="15sp"
             />
         <TextView
-            android:id="@+id/firstNameTxt"
+            android:id="@+id/fullNameTxt"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="15dp"
             android:layout_marginLeft="20dp"
             android:layout_below="@id/t2"
-            android:text="First Name"
+            android:text="Full Name"
             android:textColor="@color/black"
             android:textSize="16sp"
             android:textStyle="bold" />
         <EditText
-            android:id="@+id/firstNameEditTxt"
+            android:id="@+id/fullNameEditTxt"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="10dp"
             android:layout_marginLeft="20dp"
             android:layout_marginRight="20dp"
-            android:layout_below="@id/firstNameTxt"
+            android:layout_below="@id/fullNameTxt"
             android:background="@drawable/rounded_corner_box_for_spinner_bg"
             android:hint="John"
-            android:padding="10dp"/>
-        <TextView
-            android:id="@+id/lastNameTxt"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="15dp"
-            android:layout_marginLeft="20dp"
-            android:layout_below="@id/firstNameEditTxt"
-            android:text="Last Name"
-            android:textColor="@color/black"
-            android:textSize="16sp"
-            android:textStyle="bold" />
-        <EditText
-            android:id="@+id/lastNameEditTxt"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="10dp"
-            android:layout_marginLeft="20dp"
-            android:layout_marginRight="20dp"
-            android:layout_below="@id/lastNameTxt"
-            android:background="@drawable/rounded_corner_box_for_spinner_bg"
-            android:hint="Cena"
             android:padding="10dp"/>
         <TextView
             android:id="@+id/emailTxt"
@@ -88,7 +66,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="15dp"
             android:layout_marginLeft="20dp"
-            android:layout_below="@id/lastNameEditTxt"
+            android:layout_below="@id/fullNameEditTxt"
             android:text="Email"
             android:textColor="@color/black"
             android:textSize="16sp"

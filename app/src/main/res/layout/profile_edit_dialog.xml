@@ -88,12 +88,12 @@
                     android:layout_width="match_parent"
                     android:layout_height="match_parent">
                     <com.google.android.material.textfield.TextInputLayout
-                        android:id="@+id/firstNameLayout"
+                        android:id="@+id/fullNameLayout"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         app:boxStrokeColor="@color/black"
                         app:hintTextColor="@color/black"
-                        android:hint="First Name"
+                        android:hint="Full Name"
                         android:layout_marginLeft="10dp"
                         android:layout_marginRight="10dp"
                         android:paddingLeft="10dp"
@@ -101,26 +101,7 @@
                         android:paddingBottom="5dp"
                         >
                         <com.google.android.material.textfield.TextInputEditText
-                            android:id="@+id/firstNameEditText"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content" />
-                    </com.google.android.material.textfield.TextInputLayout>
-                    <com.google.android.material.textfield.TextInputLayout
-                        android:id="@+id/lastNameLayout"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:hint="Last Name"
-                        android:layout_below="@id/firstNameLayout"
-                        app:boxStrokeColor="@color/black"
-                        app:hintTextColor="@color/black"
-                        android:layout_marginLeft="10dp"
-                        android:layout_marginRight="10dp"
-                        android:paddingLeft="10dp"
-                        android:paddingRight="10dp"
-                        android:paddingBottom="5dp"
-                        >
-                        <com.google.android.material.textfield.TextInputEditText
-                            android:id="@+id/lastNameEditText"
+                            android:id="@+id/fullNameEditText"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content" />
                     </com.google.android.material.textfield.TextInputLayout>
@@ -129,7 +110,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:hint="Email"
-                        android:layout_below="@id/lastNameLayout"
+                        android:layout_below="@id/fullNameLayout"
                         app:boxStrokeColor="@color/black"
                         app:hintTextColor="@color/black"
                         android:layout_marginLeft="10dp"
@@ -143,49 +124,30 @@
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content" />
                     </com.google.android.material.textfield.TextInputLayout>
-                    <com.google.android.material.textfield.TextInputLayout
-                        android:id="@+id/phoneLayout"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:hint="Phone"
-                        android:layout_below="@id/emailNameLayout"
-                        app:boxStrokeColor="@color/black"
-                        app:hintTextColor="@color/black"
-                        android:layout_marginLeft="10dp"
-                        android:layout_marginRight="10dp"
-                        android:paddingLeft="10dp"
-                        android:paddingRight="10dp"
-                        android:paddingBottom="5dp"
-                        >
-                        <com.google.android.material.textfield.TextInputEditText
-                            android:id="@+id/phoneEditText"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content" />
-                    </com.google.android.material.textfield.TextInputLayout>
-                    <com.google.android.material.textfield.TextInputLayout
-                        android:id="@+id/ageLayout"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:hint="Age"
-                        android:layout_below="@id/phoneLayout"
-                        app:boxStrokeColor="@color/black"
-                        app:hintTextColor="@color/black"
-                        android:layout_marginLeft="10dp"
-                        android:layout_marginRight="10dp"
-                        android:paddingLeft="10dp"
-                        android:paddingRight="10dp"
-                        android:paddingBottom="5dp"
-                        >
-                        <com.google.android.material.textfield.TextInputEditText
-                            android:id="@+id/ageEditText"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content" />
-                    </com.google.android.material.textfield.TextInputLayout>
+<!--                    <com.google.android.material.textfield.TextInputLayout-->
+<!--                        android:id="@+id/phoneLayout"-->
+<!--                        android:layout_width="match_parent"-->
+<!--                        android:layout_height="wrap_content"-->
+<!--                        android:hint="Phone"-->
+<!--                        android:layout_below="@id/emailNameLayout"-->
+<!--                        app:boxStrokeColor="@color/black"-->
+<!--                        app:hintTextColor="@color/black"-->
+<!--                        android:layout_marginLeft="10dp"-->
+<!--                        android:layout_marginRight="10dp"-->
+<!--                        android:paddingLeft="10dp"-->
+<!--                        android:paddingRight="10dp"-->
+<!--                        android:paddingBottom="5dp"-->
+<!--                        >-->
+<!--                        <com.google.android.material.textfield.TextInputEditText-->
+<!--                            android:id="@+id/phoneEditText"-->
+<!--                            android:layout_width="match_parent"-->
+<!--                            android:layout_height="wrap_content" />-->
+<!--                    </com.google.android.material.textfield.TextInputLayout>-->
                     <Button
                         android:id="@+id/saveBtn"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_below="@id/ageLayout"
+                        android:layout_below="@id/emailNameLayout"
                         android:layout_centerHorizontal="true"
                         android:text="Save"
                         android:textColor="@color/white"

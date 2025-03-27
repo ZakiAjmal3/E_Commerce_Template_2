@@ -205,11 +205,20 @@
                             android:maxLength="6"/>
                     </com.google.android.material.textfield.TextInputLayout>\
                     <Spinner
-                        android:id="@+id/stateSpinner"
+                        android:id="@+id/genderSpinner"
                         android:layout_width="match_parent"
                         android:layout_height="50dp"
                         android:background="@drawable/rounded_corner_box_for_spinner_bg"
                         android:layout_below="@id/pinCodeLayout"
+                        android:layout_marginLeft="20dp"
+                        android:layout_marginRight="20dp"
+                        android:layout_marginTop="5dp"/>
+                    <Spinner
+                        android:id="@+id/stateSpinner"
+                        android:layout_width="match_parent"
+                        android:layout_height="50dp"
+                        android:background="@drawable/rounded_corner_box_for_spinner_bg"
+                        android:layout_below="@id/genderSpinner"
                         android:layout_marginLeft="20dp"
                         android:layout_marginRight="20dp"
                         android:layout_marginTop="5dp"/>

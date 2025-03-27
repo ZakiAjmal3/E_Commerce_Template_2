@@ -12,27 +12,50 @@ import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.Window;
 import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
+import com.example.ecommercewhitelabel.Activities.LoginActivity;
 import com.example.ecommercewhitelabel.R;
+import com.example.ecommercewhitelabel.Utils.SessionManager;
 import com.google.android.material.textfield.TextInputLayout;
 
 public class ProfileFragment extends Fragment {
     ImageView editNameBtn,editPersonalBtn;
+    TextView userFullNameTxt1,userEmailTxt1,userFullNameTxt2,userEmailTxt2;
+    String fullNameStr,emailStr;
+    SessionManager sessionManager;
+    Dialog progressBarDialog;
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_profile, container, false);
 
+        sessionManager = new SessionManager(getContext());
+
         editNameBtn = view.findViewById(R.id.editNameBtn);
         editPersonalBtn = view.findViewById(R.id.editNameBtn2);
+
+        userFullNameTxt1 = view.findViewById(R.id.userNameTxt);
+        userEmailTxt1 = view.findViewById(R.id.userEmailTxt);
+        userFullNameTxt2 = view.findViewById(R.id.fullNameDisplayTxt);
+        userEmailTxt2 = view.findViewById(R.id.emailDisplayTxt);
+
+        fullNameStr = sessionManager.getUserData().get("fullName");
+        emailStr = sessionManager.getUserData().get("email");
+
+        userFullNameTxt1.setText(fullNameStr);
+        userFullNameTxt2.setText(fullNameStr);
+        userEmailTxt1.setText(emailStr);
+        userEmailTxt2.setText(emailStr);
 
         editNameBtn.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -51,8 +74,8 @@ public class ProfileFragment extends Fragment {
     Dialog drawerDialog;
     ImageView crossBtn;
     Button saveBtn;
-    TextInputLayout firstNameLayout, lastNameLayout, emailNameLayout, phoneLayout, ageLayout;
-    EditText firstNameEditText, lastNameEditText, emailEditText, phoneEditText, ageEditText;
+    TextInputLayout fullNameLayout, emailNameLayout;
+    EditText fullNameEditTxt, emailEditText;
     @SuppressLint("ResourceAsColor")
     public void openEditDialog() {
         drawerDialog = new Dialog(ProfileFragment.this.getContext());
@@ -62,20 +85,26 @@ public class ProfileFragment extends Fragment {
         crossBtn = drawerDialog.findViewById(R.id.crossBtn);
 
         saveBtn = drawerDialog.findViewById(R.id.saveBtn);
-        firstNameLayout = drawerDialog.findViewById(R.id.firstNameLayout);
-        lastNameLayout = drawerDialog.findViewById(R.id.lastNameLayout);
+        fullNameLayout = drawerDialog.findViewById(R.id.firstNameLayout);
         emailNameLayout = drawerDialog.findViewById(R.id.emailNameLayout);
-        phoneLayout = drawerDialog.findViewById(R.id.phoneLayout);
-        ageLayout = drawerDialog.findViewById(R.id.ageLayout);
-        firstNameEditText = drawerDialog.findViewById(R.id.firstNameEditText);
-        lastNameEditText = drawerDialog.findViewById(R.id.lastNameEditText);
+//        phoneLayout = drawerDialog.findViewById(R.id.phoneLayout);
+        fullNameEditTxt = drawerDialog.findViewById(R.id.firstNameEditText);
+        fullNameEditTxt.setText(fullNameStr);
         emailEditText = drawerDialog.findViewById(R.id.emailEditText);
-        phoneEditText = drawerDialog.findViewById(R.id.phoneEditText);
-        ageEditText = drawerDialog.findViewById(R.id.ageEditText);
+        emailEditText.setText(emailStr);
+//        phoneEditText = drawerDialog.findViewById(R.id.phoneEditText);
 
         saveBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                progressBarDialog = new Dialog(getContext());
+                progressBarDialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
+                progressBarDialog.setContentView(R.layout.progress_bar_dialog);
+                progressBarDialog.setCancelable(false);
+                progressBarDialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+                progressBarDialog.getWindow().setGravity(Gravity.CENTER); // Center the dialog
+                progressBarDialog.getWindow().setLayout(WindowManager.LayoutParams.WRAP_CONTENT, WindowManager.LayoutParams.WRAP_CONTENT); // Adjust the size
+                progressBarDialog.show();
                 checkValidation();
             }
         });
@@ -87,7 +116,7 @@ public class ProfileFragment extends Fragment {
             }
         });
 
-        firstNameEditText.addTextChangedListener(new TextWatcher() {
+        fullNameEditTxt.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
 
@@ -96,9 +125,9 @@ public class ProfileFragment extends Fragment {
             @Override
             public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
                 if (!charSequence.equals("")){
-                    firstNameLayout.setError(null);
+                    fullNameLayout.setError(null);
                 }else {
-                    firstNameLayout.setError("First Name Required");
+                    fullNameLayout.setError("First Name Required");
                 }
             }
 
@@ -107,26 +136,7 @@ public class ProfileFragment extends Fragment {
 
             }
         });
-        lastNameEditText.addTextChangedListener(new TextWatcher() {
-            @Override
-            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
 
-            }
-
-            @Override
-            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-                if (!charSequence.equals("")){
-                    lastNameLayout.setError(null);
-                }else {
-                    lastNameLayout.setError("Last Name Required");
-                }
-            }
-
-            @Override
-            public void afterTextChanged(Editable editable) {
-
-            }
-        });
         emailEditText.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
@@ -147,46 +157,26 @@ public class ProfileFragment extends Fragment {
 
             }
         });
-        phoneEditText.addTextChangedListener(new TextWatcher() {
-            @Override
-            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-
-            }
-
-            @Override
-            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-                if (!charSequence.equals("")){
-                    phoneLayout.setError(null);
-                }else {
-                    phoneLayout.setError("Phone is Required");
-                }
-            }
-
-            @Override
-            public void afterTextChanged(Editable editable) {
-
-            }
-        });
-        ageEditText.addTextChangedListener(new TextWatcher() {
-            @Override
-            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-
-            }
-
-            @Override
-            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-                if (!charSequence.equals("")){
-                    ageLayout.setError(null);
-                }else {
-                    ageLayout.setError("Age is required");
-                }
-            }
-
-            @Override
-            public void afterTextChanged(Editable editable) {
-
-            }
-        });
+//        phoneEditText.addTextChangedListener(new TextWatcher() {
+//            @Override
+//            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+//
+//            }
+//
+//            @Override
+//            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+//                if (!charSequence.equals("")){
+//                    phoneLayout.setError(null);
+//                }else {
+//                    phoneLayout.setError("Phone is Required");
+//                }
+//            }
+//
+//            @Override
+//            public void afterTextChanged(Editable editable) {
+//
+//            }
+//        });
 
         drawerDialog.show();
         drawerDialog.getWindow().setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
@@ -200,22 +190,19 @@ public class ProfileFragment extends Fragment {
     }
 
     private void checkValidation() {
-        if (firstNameEditText.getText().toString().isEmpty()) {
-            firstNameLayout.setError("Please enter your first name");
-        }
-        if (lastNameEditText.getText().toString().isEmpty()) {
-            lastNameLayout.setError("Please enter your last name");
+        if (fullNameEditTxt.getText().toString().isEmpty()) {
+            fullNameLayout.setError("Please enter your first name");
+            return;
         }
         if (emailEditText.getText().toString().isEmpty()) {
             emailNameLayout.setError("Please enter your email");
+            return;
         }
-        if (phoneEditText.getText().toString().isEmpty()) {
-            phoneLayout.setError("Please enter your phone number");
-        }
-        if (ageEditText.getText().toString().isEmpty()) {
-            ageLayout.setError("Please enter your age");
-        } else {
-            drawerDialog.dismiss();
-        }
+        updateUser();
+        drawerDialog.dismiss();
+    }
+
+    private void updateUser() {
+
     }
 }

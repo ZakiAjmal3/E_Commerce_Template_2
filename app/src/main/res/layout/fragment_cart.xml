@@ -118,6 +118,7 @@
                         android:weightSum="2"
                         android:orientation="horizontal">
                         <TextView
+                            android:id="@+id/discountTxt"
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
@@ -247,13 +248,63 @@
                             android:text="Apply"
                             android:textColor="@color/white" />
                     </LinearLayout>
+                    <View
+                        android:id="@+id/v2"
+                        android:layout_width="match_parent"
+                        android:layout_height="1dp"
+                        android:background="@color/light_dark_grey"
+                        android:layout_marginTop="10dp"
+                        android:layout_below="@id/promoCodeLL"/>
+                    <RelativeLayout
+                        android:id="@+id/couponsViewRL"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_below="@id/v2"
+                        android:layout_marginLeft="10dp"
+                        android:layout_marginRight="10dp"
+                        android:paddingLeft="5dp"
+                        android:paddingRight="5dp"
+                        android:paddingTop="10dp"
+                        android:paddingBottom="10dp">
+                        <ImageView
+                            android:id="@+id/disIcon"
+                            android:layout_width="20dp"
+                            android:layout_height="20dp"
+                            android:src="@drawable/ic_discount_black"
+                            android:layout_centerVertical="true"/>
+                        <TextView
+                            android:id="@+id/couponTxt"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginLeft="5dp"
+                            android:layout_marginRight="15dp"
+                            android:layout_toRightOf="@id/disIcon"
+                            android:layout_centerVertical="true"
+                            android:text="View all offers/coupons"
+                            android:textColor="@color/black"
+                            android:textSize="16sp"/>
+                        <ImageView
+                            android:id="@+id/arrow"
+                            android:layout_width="20dp"
+                            android:layout_height="20dp"
+                            android:padding="5dp"
+                            android:src="@drawable/ic_right_arrow"
+                            android:layout_centerVertical="true"
+                            android:layout_alignParentEnd="true"/>
+                    </RelativeLayout>
+                    <View
+                        android:id="@+id/v3"
+                        android:layout_width="match_parent"
+                        android:layout_height="1dp"
+                        android:background="@color/light_dark_grey"
+                        android:layout_below="@id/couponsViewRL"/>
                     <Button
                         android:id="@+id/goToCheckOutTxt"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_weight="0.8"
                         android:layout_marginTop="15dp"
-                        android:layout_below="@id/promoCodeLL"
+                        android:layout_below="@id/v3"
                         android:layout_marginLeft="7.5dp"
                         android:backgroundTint="@color/black"
                         android:textSize="16sp"

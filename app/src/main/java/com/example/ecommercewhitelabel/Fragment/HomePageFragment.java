@@ -3,14 +3,21 @@ package com.example.ecommercewhitelabel.Fragment;
 import android.animation.Animator;
 import android.animation.AnimatorSet;
 import android.animation.ObjectAnimator;
+import android.app.Dialog;
 import android.content.Intent;
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+import android.util.Log;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
+import android.view.Window;
+import android.view.WindowManager;
 import android.view.animation.DecelerateInterpolator;
 import android.widget.Button;
 import android.widget.HorizontalScrollView;
@@ -18,6 +25,7 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -26,14 +34,31 @@ import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.android.volley.AuthFailureError;
+import com.android.volley.Request;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.JsonObjectRequest;
+import com.example.ecommercewhitelabel.Activities.AddressShowingInputActivity;
 import com.example.ecommercewhitelabel.Activities.MensCasualClothesActivity;
 import com.example.ecommercewhitelabel.Adapter.HomePageAdapter.BrowseByDressStyleAdapter;
 import com.example.ecommercewhitelabel.Adapter.HomePageAdapter.ProductDetailsForFragmentAdapter;
 import com.example.ecommercewhitelabel.Model.HomePageBrowseByDStyleModel;
 import com.example.ecommercewhitelabel.Model.ProductDetailsModel;
+import com.example.ecommercewhitelabel.Model.ProductImagesModel;
 import com.example.ecommercewhitelabel.R;
+import com.example.ecommercewhitelabel.Utils.Constant;
+import com.example.ecommercewhitelabel.Utils.MySingleton;
+import com.example.ecommercewhitelabel.Utils.MySingletonFragment;
+import com.example.ecommercewhitelabel.Utils.SessionManager;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 public class HomePageFragment extends Fragment {
     RecyclerView newArrivalRecycler,topSellingRecycler,browseByDressRecycler;
@@ -51,10 +76,15 @@ public class HomePageFragment extends Fragment {
     private Runnable rotationRunnable;
     private Runnable rotationRunnable2;
     TextView headTxt1,headTxt2,viewAllDressTxtBtn,topSellingViewAllTxtBtn,brandNumCountTxt,brandNumCountBelowTxt,qualityNumCountTxt,customerNumCountTxt;
+    SessionManager sessionManager;
+    String authToken;
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_homepage, container, false);
+
+        sessionManager = new SessionManager(getContext());
+        authToken = sessionManager.getUserData().get("authToken");
 
         shopNowBtn = view.findViewById(R.id.btnShopNow);
         viewAllDressTxtBtn = view.findViewById(R.id.viewAllTxtBtn);
@@ -258,11 +288,11 @@ public class HomePageFragment extends Fragment {
         topSellingRecycler.setLayoutManager(new LinearLayoutManager(getContext(),LinearLayoutManager.HORIZONTAL,false));
 
         newArrivalList = new ArrayList<>();
-        newArrivalList.add(new ProductDetailsModel("Product 1","200","2.5",0));
-        newArrivalList.add(new ProductDetailsModel("Product 2","300","5",0));
-        newArrivalList.add(new ProductDetailsModel("Product 3","250","3",0));
-        newArrivalList.add(new ProductDetailsModel("Product 4","3000","4.5",0));
-        newArrivalList.add(new ProductDetailsModel("Product 5","199","1.2",0));
+//        newArrivalList.add(new ProductDetailsModel("Product 1","200","2.5",0));
+//        newArrivalList.add(new ProductDetailsModel("Product 2","300","5",0));
+//        newArrivalList.add(new ProductDetailsModel("Product 3","250","3",0));
+//        newArrivalList.add(new ProductDetailsModel("Product 4","3000","4.5",0));
+//        newArrivalList.add(new ProductDetailsModel("Product 5","199","1.2",0));
 
         browseByDressList = new ArrayList<>();
         browseByDressList.add(new HomePageBrowseByDStyleModel("CASUAL",R.drawable.ic_casual_bg));
@@ -283,18 +313,120 @@ public class HomePageFragment extends Fragment {
         viewAllDressTxtBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                startActivity(new Intent(getContext(), MensCasualClothesActivity.class));
+                Intent intent = new Intent(getContext(), MensCasualClothesActivity.class);
+                intent.putExtra("Title","Casual");
+                startActivity(intent);
             }
         });
         topSellingViewAllTxtBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                startActivity(new Intent(getContext(), MensCasualClothesActivity.class));
-            }
+                Intent intent = new Intent(getContext(), MensCasualClothesActivity.class);
+                intent.putExtra("Title","Casual");
+                startActivity(intent);            }
         });
+
+        getNewArrivalProducts();
 
         return  view;
     }
+
+    private void getNewArrivalProducts() {
+        String newArrivalURL = Constant.BASE_URL + "product/" + sessionManager.getStoreId() + "?pageNumber=1&pageSize=5";
+        Log.e("ProductsURL",newArrivalURL);
+        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, newArrivalURL, null,
+                new Response.Listener<JSONObject>() {
+                    @Override
+                    public void onResponse(JSONObject response) {
+                        try {
+                            JSONArray dataArray = response.getJSONArray("data");
+                            for (int i = 0; i < dataArray.length(); i++) {
+                                JSONObject productObj = dataArray.getJSONObject(i);
+                                String productId = productObj.getString("_id");
+                                String title = productObj.getString("title");
+
+                                JSONObject slugObj = productObj.getJSONObject("meta");
+                                String slug = slugObj.getString("slug");
+
+                                String MRP = productObj.getString("MRP");
+                                String price = productObj.getString("price");
+
+                                JSONObject discountObj = productObj.getJSONObject("discount");
+                                String discountAmount = discountObj.getString("amount");
+                                String discountPercentage = discountObj.getString("percentage");
+
+                                String stock = productObj.getString("stock");
+                                String description = productObj.getString("description");
+
+                                String tags = parseTags(productObj.getJSONArray("tags"));
+
+                                String SKU = productObj.getString("SKU");
+
+                                ArrayList<ProductImagesModel> imagesList = new ArrayList<>();
+                                JSONArray imageArray = productObj.getJSONArray("images");
+                                for (int j = 0; j < imageArray.length(); j++) {
+                                    String imageUrl = imageArray.getString(j);
+                                    Log.e("JSONIMG",imageUrl);
+                                    imagesList.add(new ProductImagesModel(imageUrl));
+                                }
+
+                                String store = productObj.getString("store");
+                                String category = productObj.getString("category");
+                                String inputTag = productObj.getString("inputTag");
+
+                                newArrivalList.add(new ProductDetailsModel(productId,title,slug,MRP,price,
+                                        discountAmount,discountPercentage,stock,description,tags,SKU,store,
+                                        category,inputTag,"4",0,imagesList));
+                            }
+                            if (!newArrivalList.isEmpty()){
+                                newArrivalRecycler.setAdapter(new ProductDetailsForFragmentAdapter(newArrivalList,HomePageFragment.this));
+                            }
+                        } catch (JSONException e) {
+                            throw new RuntimeException(e);
+                        }
+                    }
+                },
+                new Response.ErrorListener() {
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+//                        progressBarDialog.dismiss();
+                        String errorMessage = "Error: " + error.toString();
+                        if (error.networkResponse != null) {
+                            try {
+                                // Parse the error response
+                                String jsonError = new String(error.networkResponse.data);
+                                JSONObject jsonObject = new JSONObject(jsonError);
+                                String message = jsonObject.optString("message", "Unknown error");
+                                // Now you can use the message
+                                Toast.makeText(getContext(), message, Toast.LENGTH_LONG).show();
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            }
+                        }
+                        Log.e("ExamListError", errorMessage);
+                    }
+                }) {
+            @Override
+            public Map<String, String> getHeaders() throws AuthFailureError {
+                Map<String, String> headers = new HashMap<>();
+                headers.put("Content-Type", "application/json");
+                headers.put("Authorization", "Bearer " + authToken);
+                return headers;
+            }
+        };
+        MySingletonFragment.getInstance(this).addToRequestQueue(jsonObjectRequest);
+    }
+    private String parseTags(JSONArray tagsArray) throws JSONException {
+        StringBuilder tags = new StringBuilder();
+        for (int j = 0; j < tagsArray.length(); j++) {
+            tags.append(tagsArray.getString(j)).append(", ");
+        }
+        if (tags.length() > 0) {
+            tags.setLength(tags.length() - 2); // Remove trailing comma and space
+        }
+        return tags.toString();
+    }
+
     // Function to animate the count for brand, quality, and customer numbers
     private void animateCount(final TextView textView, final int targetValue, final int delay) {
         new Thread(new Runnable() {

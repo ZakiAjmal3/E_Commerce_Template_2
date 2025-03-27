@@ -2,6 +2,13 @@ package com.example.ecommercewhitelabel.Adapter.HomePageAdapter;
 
 import android.annotation.SuppressLint;
 import android.content.Intent;
+import android.graphics.Color;
+import android.text.Spannable;
+import android.text.SpannableString;
+import android.text.SpannableStringBuilder;
+import android.text.TextUtils;
+import android.text.style.ForegroundColorSpan;
+import android.text.style.StrikethroughSpan;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -14,6 +21,7 @@ import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.bumptech.glide.Glide;
 import com.example.ecommercewhitelabel.Activities.HomePageActivity;
 import com.example.ecommercewhitelabel.Activities.SingleProductDetailsActivity;
 import com.example.ecommercewhitelabel.Fragment.WishListFragment;
@@ -26,6 +34,7 @@ import java.util.ArrayList;
 public class ProductDetailsForFragmentAdapter extends RecyclerView.Adapter<ProductDetailsForFragmentAdapter.ViewHolder> {
     ArrayList<ProductDetailsModel> productDetailsList;
     Fragment context;
+    SpannableStringBuilder spannableText;
     public ProductDetailsForFragmentAdapter(ArrayList<ProductDetailsModel> productDetailsList, Fragment context) {
         this.productDetailsList = productDetailsList;
         this.context = context;
@@ -41,17 +50,40 @@ public class ProductDetailsForFragmentAdapter extends RecyclerView.Adapter<Produ
 
     @Override
     public void onBindViewHolder(@NonNull ProductDetailsForFragmentAdapter.ViewHolder holder, @SuppressLint("RecyclerView") int position) {
-        holder.productName.setText(productDetailsList.get(position).getProductName());
-        holder.productPrice.setText("₹ " + productDetailsList.get(position).getProductPrice());
+        holder.productName.setText(productDetailsList.get(position).getProductTitle());
+        holder.productName.setEllipsize(TextUtils.TruncateAt.END);
+        holder.productName.setMaxLines(2);
+
         holder.productRating.setText(productDetailsList.get(position).getProductRating() + "/5");
-//        holder.imageView.setImageResource(productDetailsList.get(position).getProductImage());
+
+        Glide.with(context).load(productDetailsList.get(position).getProductImagesModelsArrList().get(0).getProductImage()).into(holder.productImg);
         holder.ratingBar.setRating(Float.parseFloat(productDetailsList.get(position).getProductRating()));
+
+        String originalPrice,disPercent,sellingPrice;
+        originalPrice = productDetailsList.get(position).getProductMRP();
+        disPercent = productDetailsList.get(position).getDiscountPercentage();
+        sellingPrice = productDetailsList.get(position).getProductPrice();
+
+        // Create a SpannableString for the original price with strikethrough
+        SpannableString spannableOriginalPrice = new SpannableString("₹" + originalPrice);
+        spannableOriginalPrice.setSpan(new StrikethroughSpan(), 0, spannableOriginalPrice.length(), 0);
+        // Create the discount text
+        String discountText = "(-" + disPercent + "%)";
+        spannableText = new SpannableStringBuilder();
+        spannableText.append("₹" + sellingPrice + " ");
+        spannableText.append(spannableOriginalPrice);
+        spannableText.append(" " + discountText);
+        // Set the color for the discount percentage
+        int startIndex = spannableText.length() - discountText.length();
+        spannableText.setSpan(new ForegroundColorSpan(Color.GREEN), startIndex, spannableText.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+
+        holder.productPrice.setText(spannableText);
 
         holder.buyBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent(context.getContext(), HomePageActivity.class);
-                intent.putExtra("LoadCartFrag",true);
+                Intent intent = new Intent(context.getContext(), SingleProductDetailsActivity.class);
+                intent.putExtra("productId",productDetailsList.get(position).getProductId());
                 context.startActivity(intent);
             }
         });
@@ -114,9 +146,7 @@ public class ProductDetailsForFragmentAdapter extends RecyclerView.Adapter<Produ
                 @Override
                 public void onClick(View v) {
                     Intent intent = new Intent(context.getContext(), SingleProductDetailsActivity.class);
-                    intent.putExtra("productName",productDetailsList.get(getAdapterPosition()).getProductName());
-                    intent.putExtra("productPrice",productDetailsList.get(getAdapterPosition()).getProductPrice());
-                    intent.putExtra("productRating",productDetailsList.get(getAdapterPosition()).getProductRating());
+                    intent.putExtra("productId",productDetailsList.get(getAdapterPosition()).getProductId());
                     context.startActivity(intent);
 
                 }

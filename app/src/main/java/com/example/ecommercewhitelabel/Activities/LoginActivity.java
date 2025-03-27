@@ -1,12 +1,19 @@
 package com.example.ecommercewhitelabel.Activities;
 
+import android.app.Dialog;
 import android.content.Intent;
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.os.Build;
 import android.os.Bundle;
 import android.text.method.HideReturnsTransformationMethod;
 import android.text.method.PasswordTransformationMethod;
+import android.util.Log;
+import android.view.Gravity;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.Window;
+import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.RelativeLayout;
@@ -20,14 +27,33 @@ import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
+import com.android.volley.AuthFailureError;
+import com.android.volley.Request;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.JsonObjectRequest;
 import com.example.ecommercewhitelabel.R;
+import com.example.ecommercewhitelabel.Utils.Constant;
+import com.example.ecommercewhitelabel.Utils.MySingleton;
+import com.example.ecommercewhitelabel.Utils.SessionManager;
+
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.util.HashMap;
+import java.util.Map;
 
 public class LoginActivity extends AppCompatActivity {
+    String loginURL = Constant.BASE_URL + "auth/customer-login";
+    String getUserURL = Constant.BASE_URL + "auth/customer/";
     EditText emailEditTxt, passwordEditTxt;
     Button loginBtn;
     TextView signUpTxt;
     RelativeLayout continueWithGoogleRLBTN;
     private boolean isPasswordVisible = false;
+    Dialog progressBarDialog;
+    SessionManager sessionManager;
+    String storeId,userId,authToken;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -43,6 +69,8 @@ public class LoginActivity extends AppCompatActivity {
         }
         getWindow().setStatusBarColor(ContextCompat.getColor(this,R.color.black));
 //        getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR);
+        sessionManager = new SessionManager(LoginActivity.this);
+        storeId = sessionManager.getStoreId();
 
         emailEditTxt = findViewById(R.id.emailEditTxt);
         passwordEditTxt = findViewById(R.id.passwordEditTxt);
@@ -53,13 +81,21 @@ public class LoginActivity extends AppCompatActivity {
         loginBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                signInUser();
+                progressBarDialog = new Dialog(LoginActivity.this);
+                progressBarDialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
+                progressBarDialog.setContentView(R.layout.progress_bar_dialog);
+                progressBarDialog.setCancelable(false);
+                progressBarDialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+                progressBarDialog.getWindow().setGravity(Gravity.CENTER); // Center the dialog
+                progressBarDialog.getWindow().setLayout(WindowManager.LayoutParams.WRAP_CONTENT, WindowManager.LayoutParams.WRAP_CONTENT); // Adjust the size
+                progressBarDialog.show();
+                checkValidation();
             }
         });
         continueWithGoogleRLBTN.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                signInUser();
+                checkValidation();
             }
         });
         signUpTxt.setOnClickListener(new View.OnClickListener() {
@@ -88,8 +124,7 @@ public class LoginActivity extends AppCompatActivity {
         if (isPasswordVisible) {
             // Set password to hidden
             passwordEditTxt.setTransformationMethod(PasswordTransformationMethod.getInstance());
-
-            passwordEditTxt.setCompoundDrawablesWithIntrinsicBounds(0, 0, R.drawable.eye_close, 0); // Change icon to "eye_open"
+            passwordEditTxt.setCompoundDrawablesWithIntrinsicBounds(0, 0, R.drawable.eye_close, 0);
         } else {
             // Set password to visible
             passwordEditTxt.setTransformationMethod(HideReturnsTransformationMethod.getInstance());
@@ -102,18 +137,139 @@ public class LoginActivity extends AppCompatActivity {
         // Toggle the state of visibility
         isPasswordVisible = !isPasswordVisible;
     }
-    private void signInUser() {
+    private void checkValidation() {
         if (emailEditTxt.getText().toString().isEmpty()) {
             emailEditTxt.setError("Email is required");
+            progressBarDialog.dismiss();
             return;
         }
         if (passwordEditTxt.getText().toString().isEmpty()) {
             passwordEditTxt.setError("Password is required");
+            progressBarDialog.dismiss();
             return;
         }
-        Intent intent = new Intent(LoginActivity.this, HomePageActivity.class);
-        startActivity(intent);
-        Toast.makeText(LoginActivity.this, "Logged in Successful", Toast.LENGTH_SHORT).show();
-        finish();
+        signInUser();
+//        Intent intent = new Intent(LoginActivity.this, HomePageActivity.class);
+//        startActivity(intent);
+//        Toast.makeText(LoginActivity.this, "Logged in Successful", Toast.LENGTH_SHORT).show();
+//        finish();
     }
+
+    private void signInUser() {
+        String password,email;
+
+        password = passwordEditTxt.getText().toString().trim();
+        email = emailEditTxt.getText().toString().trim();
+
+        JSONObject userOBJ = new JSONObject();
+        try {
+            userOBJ.put("password",password);
+            userOBJ.put("email",email);
+            userOBJ.put("storeId",storeId);
+        } catch (JSONException e) {
+            throw new RuntimeException(e);
+        }
+
+        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.POST, loginURL, userOBJ,
+                new Response.Listener<JSONObject>() {
+                    @Override
+                    public void onResponse(JSONObject response) {
+                        try {
+                            authToken = response.getString("token");
+                            sessionManager.saveAuthToken(userId,authToken);
+                            JSONObject jsonObject = response.getJSONObject("user");
+                            userId = jsonObject.getString("id");
+                            String fullName = jsonObject.getString("name");
+                            String email = jsonObject.getString("email");
+                            String role = jsonObject.getString("role");
+                            sessionManager.saveUserDetails(fullName,email,role);
+                            startActivity(new Intent(LoginActivity.this,HomePageActivity.class));
+                            Toast.makeText(LoginActivity.this, "Login SuccessFull", Toast.LENGTH_SHORT).show();
+                            finish();
+                            progressBarDialog.dismiss();
+                        } catch (JSONException e) {
+                            progressBarDialog.dismiss();
+                            Log.e("Exam Catch error", "Error parsing JSON: " + e.getMessage());
+                        }
+                    }
+                },
+                new Response.ErrorListener() {
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+                        progressBarDialog.dismiss();
+                        String errorMessage = "Error: " + error.toString();
+                        if (error.networkResponse != null) {
+                            try {
+                                // Parse the error response
+                                String jsonError = new String(error.networkResponse.data);
+                                JSONObject jsonObject = new JSONObject(jsonError);
+                                String message = jsonObject.optString("message", "Unknown error");
+                                // Now you can use the message
+                                Toast.makeText(LoginActivity.this, message, Toast.LENGTH_LONG).show();
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            }
+                        }
+                        Log.e("ExamListError", errorMessage);
+                    }
+                }) {
+            @Override
+            public Map<String, String> getHeaders() throws AuthFailureError {
+                Map<String, String> headers = new HashMap<>();
+                headers.put("Content-Type", "application/json");
+                return headers;
+            }
+        };
+        MySingleton.getInstance(this).addToRequestQueue(jsonObjectRequest);
+    }
+
+//    private void getUserById() {
+//        String getUserURL2 = getUserURL + userId;
+//        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, getUserURL2, null,
+//                new Response.Listener<JSONObject>() {
+//                    @Override
+//                    public void onResponse(JSONObject response) {
+//                        try {
+//                            JSONObject dataObj = response.getJSONObject("data");
+//                            String fullName = dataObj.getString("fullName");
+//                            String email = dataObj.getString("email");
+//                            String role = dataObj.getString("role");
+//                            sessionManager.saveUserDetails(fullName,email,role);
+//                            progressBarDialog.dismiss();
+//                        } catch (JSONException e) {
+//                            progressBarDialog.dismiss();
+//                            Log.e("Exam Catch error", "Error parsing JSON: " + e.getMessage());
+//                        }
+//                    }
+//                },
+//                new Response.ErrorListener() {
+//                    @Override
+//                    public void onErrorResponse(VolleyError error) {
+//                        progressBarDialog.dismiss();
+//                        String errorMessage = "Error: " + error.toString();
+//                        if (error.networkResponse != null) {
+//                            try {
+//                                // Parse the error response
+//                                String jsonError = new String(error.networkResponse.data);
+//                                JSONObject jsonObject = new JSONObject(jsonError);
+//                                String message = jsonObject.optString("message", "Unknown error");
+//                                // Now you can use the message
+//                                Toast.makeText(LoginActivity.this, message, Toast.LENGTH_LONG).show();
+//                            } catch (Exception e) {
+//                                e.printStackTrace();
+//                            }
+//                        }
+//                        Log.e("ExamListError", errorMessage);
+//                    }
+//                }) {
+//            @Override
+//            public Map<String, String> getHeaders() throws AuthFailureError {
+//                Map<String, String> headers = new HashMap<>();
+//                headers.put("Content-Type", "application/json");
+//                headers.put("Authorization", "Bearer " + authToken);
+//                return headers;
+//            }
+//        };
+//        MySingleton.getInstance(this).addToRequestQueue(jsonObjectRequest);
+//    }
 }

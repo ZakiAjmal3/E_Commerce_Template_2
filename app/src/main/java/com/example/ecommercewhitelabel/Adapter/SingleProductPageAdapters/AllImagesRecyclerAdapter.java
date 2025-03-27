@@ -9,14 +9,15 @@ import android.widget.ImageView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.bumptech.glide.Glide;
 import com.example.ecommercewhitelabel.R;
 
 import java.util.ArrayList;
 
 public class AllImagesRecyclerAdapter extends RecyclerView.Adapter<AllImagesRecyclerAdapter.ViewHolder> {
-    ArrayList<Integer> productDetailsList;
+    ArrayList<String> productDetailsList;
     Context context;
-    public AllImagesRecyclerAdapter(ArrayList<Integer> productDetailsList, Context context) {
+    public AllImagesRecyclerAdapter(ArrayList<String> productDetailsList, Context context) {
         this.productDetailsList = productDetailsList;
         this.context = context;
     }
@@ -32,8 +33,7 @@ public class AllImagesRecyclerAdapter extends RecyclerView.Adapter<AllImagesRecy
     @Override
     public void onBindViewHolder(@NonNull AllImagesRecyclerAdapter.ViewHolder holder, int position) {
 
-        holder.productImg.setImageResource(productDetailsList.get(position));
-
+        Glide.with(context).load(productDetailsList.get(position)).error(R.drawable.no_image).into(holder.productImg);
     }
 
     @Override

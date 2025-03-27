@@ -8,9 +8,11 @@ import android.os.Build;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.Window;
 import android.view.WindowManager;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -31,18 +33,38 @@ import androidx.core.view.WindowInsetsCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.android.volley.AuthFailureError;
+import com.android.volley.Request;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.JsonObjectRequest;
 import com.example.ecommercewhitelabel.Adapter.AddressItemAdapter;
 import com.example.ecommercewhitelabel.Model.AddressItemModel;
 import com.example.ecommercewhitelabel.R;
+import com.example.ecommercewhitelabel.Utils.Constant;
+import com.example.ecommercewhitelabel.Utils.MySingleton;
+import com.example.ecommercewhitelabel.Utils.SessionManager;
 import com.google.android.material.textfield.TextInputLayout;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 public class AddressShowingInputActivity extends AppCompatActivity {
+    String addAddressURL = Constant.BASE_URL + "address";
     RecyclerView addressRecyclerView;
+    ArrayList<AddressItemModel> addressItemArrayList = new ArrayList<>();
+    AddressItemAdapter addressItemAdapter;
     CardView addAddressBtn;
     ImageView backBtn;
     RelativeLayout noDataLayout;
+    Dialog progressBarDialog;
+    SessionManager sessionManager;
+    String authToken;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -59,16 +81,31 @@ public class AddressShowingInputActivity extends AppCompatActivity {
         getWindow().setStatusBarColor(ContextCompat.getColor(this,R.color.black));
 //        getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR);
 
+        sessionManager = new SessionManager(AddressShowingInputActivity.this);
+        authToken = sessionManager.getUserData().get("authToken");
+
         backBtn = findViewById(R.id.imgMenu);
         noDataLayout = findViewById(R.id.noDataLayout);
+        noDataLayout.setVisibility(View.GONE);
         addAddressBtn = findViewById(R.id.addAddressBtn);
         addressRecyclerView = findViewById(R.id.addressRecyclerView);
+        addressRecyclerView.setVisibility(View.GONE);
         addressRecyclerView.setLayoutManager(new LinearLayoutManager(this));
+
+        progressBarDialog = new Dialog(AddressShowingInputActivity.this);
+        progressBarDialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
+        progressBarDialog.setContentView(R.layout.progress_bar_dialog);
+        progressBarDialog.setCancelable(false);
+        progressBarDialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+        progressBarDialog.getWindow().setGravity(Gravity.CENTER); // Center the dialog
+        progressBarDialog.getWindow().setLayout(WindowManager.LayoutParams.WRAP_CONTENT, WindowManager.LayoutParams.WRAP_CONTENT); // Adjust the size
+        progressBarDialog.show();
+        getAllAddress();
 
         addAddressBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                showAddAddressDialog(-1);
+                showAddAddressDialog(0,false);
             }
         });
         backBtn.setOnClickListener(new View.OnClickListener() {
@@ -77,14 +114,96 @@ public class AddressShowingInputActivity extends AppCompatActivity {
                 onBackPressed();
             }
         });
+
+        if (getIntent().getBooleanExtra("openAddAddress",false)){
+            showAddAddressDialog(0,false);
+        }
     }
+
+    private void getAllAddress() {
+        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, addAddressURL, null,
+                new Response.Listener<JSONObject>() {
+                    @Override
+                    public void onResponse(JSONObject response) {
+                        try {
+                            addressItemArrayList.clear();
+                            JSONArray dataJSONAry = response.getJSONArray("data");
+                            for (int i = 0; i < dataJSONAry.length(); i++) {
+                                JSONObject dataObject = dataJSONAry.getJSONObject(i);
+                                String addressId = dataObject.getString("_id");
+                                String addressType = dataObject.getString("addressType");
+                                String firstName = dataObject.getString("firstName");
+                                String lastName = dataObject.getString("lastName");
+                                String country = dataObject.getString("country");
+                                String streetAddress = dataObject.getString("streetAddress");
+                                String apartment = dataObject.getString("apartment");
+                                String city = dataObject.getString("city");
+                                String state = dataObject.getString("state");
+                                String pincode = dataObject.getString("pincode");
+                                String phone = dataObject.getString("phone");
+                                String email = dataObject.getString("email");
+                                String isDefault = dataObject.getString("isDefault");
+                                addressItemArrayList.add(new AddressItemModel(addressId,addressType,firstName,lastName,null,phone,email,apartment,streetAddress,city,pincode,state,country,isDefault));
+                            }
+                            if (addressItemArrayList.isEmpty()) {
+                                noDataLayout.setVisibility(View.VISIBLE);
+                                addressRecyclerView.setVisibility(View.GONE);
+                                progressBarDialog.dismiss();
+                            } else {
+                                if (addressItemAdapter != null){
+                                    addressItemAdapter.notifyDataSetChanged();
+                                    progressBarDialog.dismiss();
+                                }else {
+                                    noDataLayout.setVisibility(View.GONE);
+                                    addressRecyclerView.setVisibility(View.VISIBLE);
+                                    addressItemAdapter = new AddressItemAdapter(addressItemArrayList, AddressShowingInputActivity.this);
+                                    addressRecyclerView.setAdapter(addressItemAdapter);
+                                    progressBarDialog.dismiss();
+                                }
+                            }
+                        } catch (JSONException e) {
+                            progressBarDialog.dismiss();
+                            Log.e("Exam Catch error", "Error parsing JSON: " + e.getMessage());
+                        }
+                    }
+                },
+                new Response.ErrorListener() {
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+                        progressBarDialog.dismiss();
+                        String errorMessage = "Error: " + error.toString();
+                        if (error.networkResponse != null) {
+                            try {
+                                // Parse the error response
+                                String jsonError = new String(error.networkResponse.data);
+                                JSONObject jsonObject = new JSONObject(jsonError);
+                                String message = jsonObject.optString("message", "Unknown error");
+                                // Now you can use the message
+                                Toast.makeText(AddressShowingInputActivity.this, message, Toast.LENGTH_LONG).show();
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            }
+                        }
+                        Log.e("ExamListError", errorMessage);
+                    }
+                }) {
+            @Override
+            public Map<String, String> getHeaders() throws AuthFailureError {
+                Map<String, String> headers = new HashMap<>();
+                headers.put("Content-Type", "application/json");
+                headers.put("Authorization", "Bearer " + authToken);
+                return headers;
+            }
+        };
+        MySingleton.getInstance(this).addToRequestQueue(jsonObjectRequest);
+    }
+
     Dialog drawerDialog;
     ImageView crossBtn;
     Button saveBtn;
     TextInputLayout firstNameLayout, lastNameLayout, emailLayout, phoneLayout, apartmentLayout, streetLayout, cityLayout, pincodeLayout;
     EditText firstNameEditText, lastNameEditText, emailEditText, phoneEditText, apartmentEditText, streetEditText, cityEditText, pincodeEditText;
-    Spinner stateSpinner, countrySpinner;
-    ArrayList<AddressItemModel> addressItemList = new ArrayList<>();
+    Spinner genderSpinner,stateSpinner, countrySpinner;
     private final String[] stateArray = {
             "Select State","Andhra Pradesh", "Arunachal Pradesh", "Assam", "Bihar", "Chhattisgarh",
             "Goa", "Gujarat", "Haryana", "Himachal Pradesh", "Jharkhand",
@@ -95,10 +214,11 @@ public class AddressShowingInputActivity extends AppCompatActivity {
             "Chandigarh", "Dadra and Nagar Haveli and Daman and Diu", "Lakshadweep",
             "Delhi", "Puducherry"
     };
-    private final String[] countryArray = {"Select City","UK", "USA", "India"};
-    String stateStr, countryStr;
+    private final String[] countryArray = {"Select Country","UK", "USA", "India"};
+    private final String[] genderArray = {"Select your gender","Male", "Female", "Other"};
+    String genderStr,stateStr, countryStr;
     @SuppressLint("ResourceAsColor")
-    public void showAddAddressDialog(int position) {
+    public void showAddAddressDialog(int position,boolean isEditing) {
         drawerDialog = new Dialog(AddressShowingInputActivity.this);
         drawerDialog.setContentView(R.layout.address_edit_dialog);
         drawerDialog.setCancelable(true);
@@ -124,31 +244,36 @@ public class AddressShowingInputActivity extends AppCompatActivity {
         cityEditText = drawerDialog.findViewById(R.id.cityEditText);
         pincodeEditText = drawerDialog.findViewById(R.id.pinCodeEditText);
 
+        genderSpinner = drawerDialog.findViewById(R.id.genderSpinner);
         stateSpinner = drawerDialog.findViewById(R.id.stateSpinner);
         countrySpinner = drawerDialog.findViewById(R.id.countrySpinner);
 
-        if (!addressItemList.isEmpty()){
-            firstNameEditText.setText(addressItemList.get(position).getFirstName());
-            lastNameEditText.setText(addressItemList.get(position).getLastName());
-            phoneEditText.setText(addressItemList.get(position).getPhone());
-            emailEditText.setText(addressItemList.get(position).getEmail());
-            apartmentEditText.setText(addressItemList.get(position).getApartment());
-            streetEditText.setText(addressItemList.get(position).getStreet());
-            cityEditText.setText(addressItemList.get(position).getCity());
-            pincodeEditText.setText(addressItemList.get(position).getPincode());
+        if (!addressItemArrayList.isEmpty() && isEditing){
+            firstNameEditText.setText(addressItemArrayList.get(position).getFirstName());
+            lastNameEditText.setText(addressItemArrayList.get(position).getLastName());
+            phoneEditText.setText(addressItemArrayList.get(position).getPhone());
+            emailEditText.setText(addressItemArrayList.get(position).getEmail());
+            apartmentEditText.setText(addressItemArrayList.get(position).getApartment());
+            streetEditText.setText(addressItemArrayList.get(position).getStreet());
+            cityEditText.setText(addressItemArrayList.get(position).getCity());
+            pincodeEditText.setText(addressItemArrayList.get(position).getPincode());
             for (int i = 0; i < stateArray.length; i++) {
-                if (stateArray[i].equals(addressItemList.get(position).getState())) {
+                if (stateArray[i].equals(addressItemArrayList.get(position).getState())) {
                     stateSpinner.setSelection(i);
                     break;
                 }
             }
             for (int i = 0; i < countryArray.length; i++) {
-                if (countryArray[i].equals(addressItemList.get(position).getCountry())) {
+                if (countryArray[i].equals(addressItemArrayList.get(position).getCountry())) {
                     countrySpinner.setSelection(i);
                     break;
                 }
             }
         }
+
+        ArrayAdapter<String> adapter2 = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, genderArray);
+        adapter2.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        genderSpinner.setAdapter(adapter2);
 
         ArrayAdapter<String> adapter1 = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, countryArray);
         adapter1.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
@@ -158,6 +283,17 @@ public class AddressShowingInputActivity extends AppCompatActivity {
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         stateSpinner.setAdapter(adapter);
 
+        genderSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                genderStr = genderArray[position];
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+
+            }
+        });
         countrySpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
@@ -345,17 +481,21 @@ public class AddressShowingInputActivity extends AppCompatActivity {
         saveBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                progressBarDialog = new Dialog(AddressShowingInputActivity.this);
+                progressBarDialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
+                progressBarDialog.setContentView(R.layout.progress_bar_dialog);
+                progressBarDialog.setCancelable(false);
+                progressBarDialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+                progressBarDialog.getWindow().setGravity(Gravity.CENTER); // Center the dialog
+                progressBarDialog.getWindow().setLayout(WindowManager.LayoutParams.WRAP_CONTENT, WindowManager.LayoutParams.WRAP_CONTENT); // Adjust the size
+                progressBarDialog.show();
                 if(checkValidation()) {
-                    addressItemList.add(new AddressItemModel(firstNameEditText.getText().toString(), lastNameEditText.getText().toString(), phoneEditText.getText().toString(), emailEditText.getText().toString(), apartmentEditText.getText().toString(), streetEditText.getText().toString(), cityEditText.getText().toString(), pincodeEditText.getText().toString(), stateStr, countryStr));
-                    addressRecyclerView.setAdapter(new AddressItemAdapter(addressItemList, AddressShowingInputActivity.this));
-                    if (addressItemList.size() > 0) {
-                        noDataLayout.setVisibility(View.GONE);
-                        addressRecyclerView.setVisibility(View.VISIBLE);
-                    } else {
-                        noDataLayout.setVisibility(View.VISIBLE);
-                        addressRecyclerView.setVisibility(View.GONE);
-                    }
-                    drawerDialog.dismiss();
+                    submitAddress(position,isEditing);
+//                    addressItemList.add(new AddressItemModel(firstNameEditText.getText().toString(), lastNameEditText.getText().toString(), phoneEditText.getText().toString(), emailEditText.getText().toString(), apartmentEditText.getText().toString(), streetEditText.getText().toString(), cityEditText.getText().toString(), pincodeEditText.getText().toString(), stateStr, countryStr));
+//                    addressRecyclerView.setAdapter(new AddressItemAdapter(addressItemList, AddressShowingInputActivity.this));
+//                    drawerDialog.dismiss();
+                }else {
+                    progressBarDialog.dismiss();
                 }
             }
         });
@@ -377,6 +517,104 @@ public class AddressShowingInputActivity extends AppCompatActivity {
             drawerDialog.getWindow().setStatusBarColor(R.color.white);
         }
     }
+
+    private void submitAddress(int position, boolean isEditing) {
+        String firstName,lastName,email,phone,apartment,street,city,pincode;
+
+        firstName = firstNameEditText.getText().toString().trim();
+        lastName = lastNameEditText.getText().toString().trim();
+        email = emailEditText.getText().toString().trim();
+        phone = phoneEditText.getText().toString().trim();
+        apartment = apartmentEditText.getText().toString().trim();
+        street = streetEditText.getText().toString().trim();
+        city = cityEditText.getText().toString().trim();
+        pincode = pincodeEditText.getText().toString().trim();
+
+        JSONObject userOBJ = new JSONObject();
+        try {
+            userOBJ.put("firstName",firstName);
+            userOBJ.put("lastName",lastName);
+            userOBJ.put("gender",genderStr);
+            userOBJ.put("email",email);
+            userOBJ.put("streetAddress",street);
+            userOBJ.put("apartment",apartment);
+            userOBJ.put("city",city);
+            userOBJ.put("state",stateStr);
+            userOBJ.put("pincode",pincode);
+            userOBJ.put("country",countryStr);
+            userOBJ.put("phone",phone);
+        } catch (JSONException e) {
+            throw new RuntimeException(e);
+        }
+        if (isEditing){
+            addAddressURL = Constant.BASE_URL + "address/update/" + addressItemArrayList.get(position).getAddressId();
+        }else {
+            addAddressURL = Constant.BASE_URL + "address";
+        }
+        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.POST, addAddressURL, userOBJ,
+                new Response.Listener<JSONObject>() {
+                    @Override
+                    public void onResponse(JSONObject response) {
+                        drawerDialog.dismiss();
+                        progressBarDialog.dismiss();
+                        Toast.makeText(AddressShowingInputActivity.this, "Address added successfully", Toast.LENGTH_SHORT).show();
+
+                        if (isEditing){
+                            addressItemArrayList.get(position).setFirstName(firstName);
+                            addressItemArrayList.get(position).setLastName(lastName);
+                            addressItemArrayList.get(position).setEmail(email);
+                            addressItemArrayList.get(position).setPhone(phone);
+                            addressItemArrayList.get(position).setApartment(apartment);
+                            addressItemArrayList.get(position).setStreet(street);
+                            addressItemArrayList.get(position).setCity(city);
+                            addressItemArrayList.get(position).setPincode(pincode);
+                            addressItemArrayList.get(position).setState(stateStr);
+                            addressItemArrayList.get(position).setCountry(countryStr);
+                            addressItemArrayList.get(position).setPhone(phone);
+                            addressItemAdapter.notifyItemChanged(position);
+                        }
+                        progressBarDialog = new Dialog(AddressShowingInputActivity.this);
+                        progressBarDialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
+                        progressBarDialog.setContentView(R.layout.progress_bar_dialog);
+                        progressBarDialog.setCancelable(false);
+                        progressBarDialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+                        progressBarDialog.getWindow().setGravity(Gravity.CENTER); // Center the dialog
+                        progressBarDialog.getWindow().setLayout(WindowManager.LayoutParams.WRAP_CONTENT, WindowManager.LayoutParams.WRAP_CONTENT); // Adjust the size
+                        progressBarDialog.show();
+                        getAllAddress();
+                    }
+                },
+                new Response.ErrorListener() {
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+                        progressBarDialog.dismiss();
+                        String errorMessage = "Error: " + error.toString();
+                        if (error.networkResponse != null) {
+                            try {
+                                // Parse the error response
+                                String jsonError = new String(error.networkResponse.data);
+                                JSONObject jsonObject = new JSONObject(jsonError);
+                                String message = jsonObject.optString("message", "Unknown error");
+                                // Now you can use the message
+                                Toast.makeText(AddressShowingInputActivity.this, message, Toast.LENGTH_LONG).show();
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            }
+                        }
+                        Log.e("ExamListError", errorMessage);
+                    }
+                }) {
+            @Override
+            public Map<String, String> getHeaders() throws AuthFailureError {
+                Map<String, String> headers = new HashMap<>();
+                headers.put("Content-Type", "application/json");
+                headers.put("Authorization", "Bearer " + authToken);
+                return headers;
+            }
+        };
+        MySingleton.getInstance(this).addToRequestQueue(jsonObjectRequest);
+    }
+
     Boolean allTrueOrFalse = true;
     private boolean checkValidation() {
         if (firstNameEditText.getText().toString().isEmpty()) {
@@ -438,9 +676,50 @@ public class AddressShowingInputActivity extends AppCompatActivity {
         return allTrueOrFalse;
     }
     public void checkAddressArrayListSize(){
-        if (addressItemList.isEmpty()) {
+        if (addressItemArrayList.isEmpty()) {
             noDataLayout.setVisibility(View.VISIBLE);
             addressRecyclerView.setVisibility(View.GONE);
         }
+    }
+    public void deleteAddress(int position){
+        String deleteURL = Constant.BASE_URL + "address/delete/" + addressItemArrayList.get(position).getAddressId();
+        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.POST, deleteURL, null,
+                new Response.Listener<JSONObject>() {
+                    @Override
+                    public void onResponse(JSONObject response) {
+                        Toast.makeText(AddressShowingInputActivity.this, "Address Deleted SuccessFully", Toast.LENGTH_SHORT).show();
+                        addressItemArrayList.remove(position);
+                        addressRecyclerView.setAdapter(new AddressItemAdapter(addressItemArrayList, AddressShowingInputActivity.this));
+                    }
+                },
+                new Response.ErrorListener() {
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+                        progressBarDialog.dismiss();
+                        String errorMessage = "Error: " + error.toString();
+                        if (error.networkResponse != null) {
+                            try {
+                                // Parse the error response
+                                String jsonError = new String(error.networkResponse.data);
+                                JSONObject jsonObject = new JSONObject(jsonError);
+                                String message = jsonObject.optString("message", "Unknown error");
+                                // Now you can use the message
+                                Toast.makeText(AddressShowingInputActivity.this, message, Toast.LENGTH_LONG).show();
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            }
+                        }
+                        Log.e("ExamListError", errorMessage);
+                    }
+                }) {
+            @Override
+            public Map<String, String> getHeaders() throws AuthFailureError {
+                Map<String, String> headers = new HashMap<>();
+                headers.put("Content-Type", "application/json");
+                headers.put("Authorization", "Bearer " + authToken);
+                return headers;
+            }
+        };
+        MySingleton.getInstance(this).addToRequestQueue(jsonObjectRequest);
     }
 }

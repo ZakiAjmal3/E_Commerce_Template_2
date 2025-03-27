@@ -40,7 +40,7 @@ public class CheckOutAdapter extends RecyclerView.Adapter<CheckOutAdapter.ViewHo
     @Override
     public void onBindViewHolder(@NonNull CheckOutAdapter.ViewHolder holder, @SuppressLint("RecyclerView") int position) {
         holder.productTitleTxt.setText(productDetailsList.get(position).getProductTitle());
-        holder.productPriceTxt.setText("₹ " +productDetailsList.get(position).getProductPrice());
+        holder.productPriceTxt.setText("₹" +productDetailsList.get(position).getProductPrice() + " x " + productDetailsList.get(position).getProductQuantity());
 //        holder.productImg.setImageResource(productDetailsList.get(position).getProductImage());
 
         holder.editLL.setOnClickListener(new View.OnClickListener() {

@@ -33,11 +33,11 @@ public class WishListFragment extends Fragment {
         wishListRecycler.setLayoutManager(new LinearLayoutManager(getContext()));
 
         newArrivalList = new ArrayList<>();
-        newArrivalList.add(new ProductDetailsModel("Product 1","200","2.5",0));
-        newArrivalList.add(new ProductDetailsModel("Product 2","300","5",0));
-        newArrivalList.add(new ProductDetailsModel("Product 3","250","3",0));
-        newArrivalList.add(new ProductDetailsModel("Product 4","3000","4.5",0));
-        newArrivalList.add(new ProductDetailsModel("Product 5","199","1.2",0));
+//        newArrivalList.add(new ProductDetailsModel("Product 1","200","2.5",0));
+//        newArrivalList.add(new ProductDetailsModel("Product 2","300","5",0));
+//        newArrivalList.add(new ProductDetailsModel("Product 3","250","3",0));
+//        newArrivalList.add(new ProductDetailsModel("Product 4","3000","4.5",0));
+//        newArrivalList.add(new ProductDetailsModel("Product 5","199","1.2",0));
 
         wishListRecycler.setAdapter(new ProductDetailsForFragmentAdapter(newArrivalList, WishListFragment.this));
         checkWishListItemArraySize();

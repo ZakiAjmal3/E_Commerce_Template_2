@@ -48,7 +48,7 @@ public class CheckOutAddressChangingRVAdapter  extends RecyclerView.Adapter<Chec
         holder.itemView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                ((CheckOutOrderActivity)context).setAddress(addressLine1,addressLine2,addressLine3);
+                ((CheckOutOrderActivity)context).setAddressFromAdapter(addressLine1,addressLine2,addressLine3,addressItemModelArrayList.get(position).getAddressId());
             }
         });
     }

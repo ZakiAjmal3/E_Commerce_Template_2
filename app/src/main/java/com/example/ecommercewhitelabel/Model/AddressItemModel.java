@@ -1,11 +1,13 @@
 package com.example.ecommercewhitelabel.Model;
 
 public class AddressItemModel {
-    String firstName,lastName,phone,email,apartment,street,city,pincode,state,country;
+    String addressId,firstName,lastName,gender,phone,email,apartment,street,city,pincode,state,country,addressType,isDefault;
 
-    public AddressItemModel(String firstName, String lastName, String phone, String email, String apartment, String street, String city, String pincode, String state, String country) {
+    public AddressItemModel(String addressId,String addressType,String firstName, String lastName, String gender, String phone, String email, String apartment, String street, String city, String pincode, String state, String country,  String isDefault) {
+        this.addressId = addressId;
         this.firstName = firstName;
         this.lastName = lastName;
+        this.gender = gender;
         this.phone = phone;
         this.email = email;
         this.apartment = apartment;
@@ -14,6 +16,32 @@ public class AddressItemModel {
         this.pincode = pincode;
         this.state = state;
         this.country = country;
+        this.addressType = addressType;
+        this.isDefault = isDefault;
+    }
+
+    public String getAddressId() {
+        return addressId;
+    }
+
+    public void setAddressId(String addressId) {
+        this.addressId = addressId;
+    }
+
+    public String getIsDefault() {
+        return isDefault;
+    }
+
+    public void setIsDefault(String isDefault) {
+        this.isDefault = isDefault;
+    }
+
+    public String getAddressType() {
+        return addressType;
+    }
+
+    public void setAddressType(String addressType) {
+        this.addressType = addressType;
     }
 
     public String getFirstName() {
@@ -30,6 +58,14 @@ public class AddressItemModel {
 
     public void setLastName(String lastName) {
         this.lastName = lastName;
+    }
+
+    public String getGender() {
+        return gender;
+    }
+
+    public void setGender(String gender) {
+        this.gender = gender;
     }
 
     public String getPhone() {

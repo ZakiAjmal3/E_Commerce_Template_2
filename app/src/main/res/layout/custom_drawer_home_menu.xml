@@ -310,6 +310,28 @@
                             android:letterSpacing="0.05" />
 
                     </RelativeLayout>
+                    <RelativeLayout
+                        android:id="@+id/layoutLogout"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:visibility="gone"
+                        android:foreground="?android:attr/selectableItemBackgroundBorderless"
+                        android:padding="7dp">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="20dp"
+                            android:fontFamily="@font/poppins"
+                            android:text="Logout"
+                            android:textSize="16sp"
+                            android:textColor="@color/black"
+                            android:textStyle="bold"
+                            android:letterSpacing="0.05" />
+
+                    </RelativeLayout>
                 </LinearLayout>
 
             </androidx.core.widget.NestedScrollView>

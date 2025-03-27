@@ -53,6 +53,7 @@
                 android:textStyle="bold"
                 android:textSize="18sp"/>
             <TextView
+                android:id="@+id/userEmailTxt"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="UserEmail123@gmail.com"
@@ -104,10 +105,10 @@
                 android:textColor="@color/black"
                 android:textStyle="bold" />
             <TextView
-                android:id="@+id/firstNameTxt"
+                android:id="@+id/fullNameTxt"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="First Name"
+                android:text="Full Name"
                 android:layout_below="@id/personalInfoTxt"
                 android:fontFamily="@font/poppins"
                 android:textSize="14sp"
@@ -115,33 +116,12 @@
                 android:textColor="@color/dark_gray"
                 android:textStyle="bold" />
             <TextView
-                android:id="@+id/firstNameDisplayTxt"
+                android:id="@+id/fullNameDisplayTxt"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="First Name"
+                android:text="Full Name"
                 android:fontFamily="@font/poppins"
-                android:layout_below="@id/firstNameTxt"
-                android:textSize="14sp"
-                android:textColor="@color/black"
-                android:textStyle="bold" />
-            <TextView
-                android:id="@+id/lastNameTxt"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Last Name"
-                android:layout_below="@id/firstNameDisplayTxt"
-                android:fontFamily="@font/poppins"
-                android:textSize="14sp"
-                android:layout_marginTop="20dp"
-                android:textColor="@color/dark_gray"
-                android:textStyle="bold" />
-            <TextView
-                android:id="@+id/lastNameDisplayTxt"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Last Name"
-                android:fontFamily="@font/poppins"
-                android:layout_below="@id/lastNameTxt"
+                android:layout_below="@id/fullNameTxt"
                 android:textSize="14sp"
                 android:textColor="@color/black"
                 android:textStyle="bold" />
@@ -150,7 +130,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Email"
-                android:layout_below="@id/lastNameDisplayTxt"
+                android:layout_below="@id/fullNameDisplayTxt"
                 android:fontFamily="@font/poppins"
                 android:textSize="14sp"
                 android:layout_marginTop="20dp"
@@ -166,48 +146,27 @@
                 android:textSize="14sp"
                 android:textColor="@color/black"
                 android:textStyle="bold" />
-            <TextView
-                android:id="@+id/phoneTxt"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Phone"
-                android:layout_below="@id/emailDisplayTxt"
-                android:fontFamily="@font/poppins"
-                android:textSize="14sp"
-                android:layout_marginTop="20dp"
-                android:textColor="@color/dark_gray"
-                android:textStyle="bold" />
-            <TextView
-                android:id="@+id/phoneDisplayTxt"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="+9123456789"
-                android:fontFamily="@font/poppins"
-                android:layout_below="@id/phoneTxt"
-                android:textSize="14sp"
-                android:textColor="@color/black"
-                android:textStyle="bold" />
-            <TextView
-                android:id="@+id/ageTxt"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Age"
-                android:layout_below="@id/phoneDisplayTxt"
-                android:fontFamily="@font/poppins"
-                android:textSize="14sp"
-                android:layout_marginTop="20dp"
-                android:textColor="@color/dark_gray"
-                android:textStyle="bold" />
-            <TextView
-                android:id="@+id/ageDisplayTxt"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="24 Years"
-                android:fontFamily="@font/poppins"
-                android:layout_below="@id/ageTxt"
-                android:textSize="14sp"
-                android:textColor="@color/black"
-                android:textStyle="bold" />
+<!--            <TextView-->
+<!--                android:id="@+id/phoneTxt"-->
+<!--                android:layout_width="wrap_content"-->
+<!--                android:layout_height="wrap_content"-->
+<!--                android:text="Phone"-->
+<!--                android:layout_below="@id/emailDisplayTxt"-->
+<!--                android:fontFamily="@font/poppins"-->
+<!--                android:textSize="14sp"-->
+<!--                android:layout_marginTop="20dp"-->
+<!--                android:textColor="@color/dark_gray"-->
+<!--                android:textStyle="bold" />-->
+<!--            <TextView-->
+<!--                android:id="@+id/phoneDisplayTxt"-->
+<!--                android:layout_width="wrap_content"-->
+<!--                android:layout_height="wrap_content"-->
+<!--                android:text="+9123456789"-->
+<!--                android:fontFamily="@font/poppins"-->
+<!--                android:layout_below="@id/phoneTxt"-->
+<!--                android:textSize="14sp"-->
+<!--                android:textColor="@color/black"-->
+<!--                android:textStyle="bold" />-->
 
         </RelativeLayout>
     </com.google.android.material.card.MaterialCardView>

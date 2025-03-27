@@ -54,9 +54,9 @@
             android:layout_height="wrap_content"
             android:layout_below="@id/addressLine1Txt"
             android:text="address line2"
-            android:textSize="18sp"
+            android:textSize="16sp"
             android:textColor="@color/black"
-            android:layout_marginTop="10dp"
+            android:layout_marginTop="5dp"
             android:layout_marginLeft="10dp"/>
         <TextView
             android:id="@+id/addressLine3Txt"
@@ -64,9 +64,9 @@
             android:layout_height="wrap_content"
             android:layout_below="@id/addressLine2Txt"
             android:text="address line2 3"
-            android:textSize="18sp"
+            android:textSize="16sp"
             android:textColor="@color/black"
-            android:layout_marginTop="10dp"
+            android:layout_marginBottom="10dp"
             android:layout_marginLeft="10dp"/>
         <RelativeLayout
             android:layout_width="wrap_content"
@@ -76,8 +76,8 @@
             android:layout_marginTop="10dp">
             <CheckBox
                 android:id="@+id/checkBox"
-                android:layout_width="25dp"
-                android:layout_height="25dp"
+                android:layout_width="22dp"
+                android:layout_height="22dp"
                 android:layout_centerVertical="true"/>
             <TextView
                 android:id="@+id/makeThisDefault"
@@ -85,7 +85,7 @@
                 android:layout_height="wrap_content"
                 android:layout_toRightOf="@id/checkBox"
                 android:text="Make as default"
-                android:textSize="18sp"
+                android:textSize="16sp"
                 android:textColor="@color/black"
                 android:layout_centerVertical="true"
                 android:layout_marginLeft="5dp"/>

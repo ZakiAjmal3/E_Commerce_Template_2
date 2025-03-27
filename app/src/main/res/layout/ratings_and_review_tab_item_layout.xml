@@ -41,7 +41,7 @@
             android:layout_width="wrap_content"
             android:layout_height="40dp"
             android:layout_centerVertical="true"
-            android:layout_marginLeft="15dp"
+            android:layout_marginLeft="5dp"
             android:layout_marginRight="5dp"
             app:endIconTint="@color/black"
             app:boxStrokeColor="@color/black"
@@ -60,15 +60,15 @@
         <Button
             android:id="@+id/writeReviewBtn"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_height="45dp"
             android:text="Write a Review"
             android:layout_toRightOf="@id/statusAutoCompLayout"
             android:backgroundTint="@color/black"
             android:textColor="@color/white"
             android:layout_centerVertical="true"
             android:layout_marginLeft="5dp"
-            android:layout_marginRight="15dp"
-            android:textSize="16sp"
+            android:layout_marginRight="5dp"
+            android:textSize="15sp"
             android:layout_centerHorizontal="true"/>
     </RelativeLayout>
     <androidx.recyclerview.widget.RecyclerView

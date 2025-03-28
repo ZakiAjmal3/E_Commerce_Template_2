@@ -71,7 +71,7 @@ public class OrderPlacedActivity extends AppCompatActivity {
         gotoMyOrders.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Intent intent = new Intent(OrderPlacedActivity.this, HomePageActivity.class);
+                Intent intent = new Intent(OrderPlacedActivity.this, MyOrdersActivity.class);
                 startActivity(intent);
                 finish();
             }

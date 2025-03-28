@@ -1,14 +1,21 @@
 package com.example.ecommercewhitelabel.Activities;
 
+import android.app.Dialog;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Build;
 import android.os.Bundle;
+import android.util.Log;
+import android.view.Gravity;
 import android.view.View;
+import android.view.Window;
+import android.view.WindowManager;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.ImageView;
+import android.widget.RelativeLayout;
 import android.widget.Spinner;
+import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
@@ -16,23 +23,45 @@ import androidx.core.content.ContextCompat;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
+import androidx.core.widget.NestedScrollView;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.android.volley.AuthFailureError;
+import com.android.volley.Request;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.JsonObjectRequest;
 import com.example.ecommercewhitelabel.Adapter.MyOrdersAdapter;
+import com.example.ecommercewhitelabel.Model.AddressItemModel;
 import com.example.ecommercewhitelabel.Model.MyOrderModel;
+import com.example.ecommercewhitelabel.Model.ProductImagesModel;
 import com.example.ecommercewhitelabel.R;
+import com.example.ecommercewhitelabel.Utils.Constant;
+import com.example.ecommercewhitelabel.Utils.MySingleton;
+import com.example.ecommercewhitelabel.Utils.SessionManager;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 public class MyOrdersActivity extends AppCompatActivity {
     ImageView backBtn;
     RecyclerView myOrderRecyclerView;
     ArrayList<MyOrderModel> myOrderArrayList;
+    RelativeLayout noDataLayout;
+    NestedScrollView mainNestedLayout;
     MyOrdersAdapter myOrdersAdapter;
     ArrayAdapter<String> dropdownStatusArrayAdapter;
     ArrayAdapter<String> dropdownFilterArrayAdapter;
     AutoCompleteTextView autoCompStatusTV,autoCompFilterTV;
+    SessionManager sessionManager;
+    String authToken;
+    Dialog progressBarDialog;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -48,26 +77,32 @@ public class MyOrdersActivity extends AppCompatActivity {
         }
         getWindow().setStatusBarColor(ContextCompat.getColor(this,R.color.black));
 //        getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR);
-
+        sessionManager = new SessionManager(MyOrdersActivity.this);
+        authToken = sessionManager.getUserData().get("authToken");
         backBtn = findViewById(R.id.imgBack);
         myOrderRecyclerView = findViewById(R.id.myOrderRecyclerView);
 
         autoCompStatusTV = findViewById(R.id.autoCompStatusTV);
         autoCompFilterTV = findViewById(R.id.autoCompFilterTV);
 
+        noDataLayout = findViewById(R.id.noDataLayout);
+        mainNestedLayout = findViewById(R.id.mainNestedLayout);
+        noDataLayout.setVisibility(View.GONE);
+        mainNestedLayout.setVisibility(View.GONE);
+
+        progressBarDialog = new Dialog(MyOrdersActivity.this);
+        progressBarDialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
+        progressBarDialog.setContentView(R.layout.progress_bar_dialog);
+        progressBarDialog.setCancelable(false);
+        progressBarDialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+        progressBarDialog.getWindow().setGravity(Gravity.CENTER); // Center the dialog
+        progressBarDialog.getWindow().setLayout(WindowManager.LayoutParams.WRAP_CONTENT, WindowManager.LayoutParams.WRAP_CONTENT); // Adjust the size
+        progressBarDialog.show();
+
         setUpSpinners();
 
         myOrderArrayList = new ArrayList<>();
         myOrderRecyclerView.setLayoutManager(new LinearLayoutManager(this));
-
-        myOrderArrayList.add(new MyOrderModel("1233434564","Shipped","Mar 7, 2025","Product title 1","240"));
-        myOrderArrayList.add(new MyOrderModel("65873434376","Delivered","Apr 7, 2020","Product title 2","150"));
-        myOrderArrayList.add(new MyOrderModel("1233434564","Pending","Jun 7, 2022","Product title 3","400"));
-        myOrderArrayList.add(new MyOrderModel("1233434564","Shipped","Oct 7, 2025","Product title 4","1500"));
-        myOrderArrayList.add(new MyOrderModel("1233434564","Shipped","Dec 7, 2025","Product title 5","350"));
-
-        myOrdersAdapter = new MyOrdersAdapter(myOrderArrayList,MyOrdersActivity.this);
-        myOrderRecyclerView.setAdapter(myOrdersAdapter);
 
         backBtn.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -75,7 +110,7 @@ public class MyOrdersActivity extends AppCompatActivity {
                 onBackPressed();
             }
         });
-
+        getAllOrders();
     }
     private void setUpSpinners() {
         String[] languages = getResources().getStringArray(R.array.my_orders_status_sort_list);
@@ -88,5 +123,84 @@ public class MyOrdersActivity extends AppCompatActivity {
         autoCompFilterTV.setAdapter(dropdownStatusArrayAdapter);
         autoCompFilterTV.setDropDownBackgroundDrawable(new ColorDrawable(Color.WHITE));
 
+    }
+    private void getAllOrders() {
+        String orderURL = Constant.BASE_URL + "order";
+        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, orderURL, null,
+                new Response.Listener<JSONObject>() {
+                    @Override
+                    public void onResponse(JSONObject response) {
+                        try {
+                            myOrderArrayList.clear();
+                            JSONArray dataJSONAry = response.getJSONArray("data");
+                            for (int i = 0; i < dataJSONAry.length(); i++){
+                                JSONObject dataJSONObj = dataJSONAry.getJSONObject(i);
+                                String orderId = dataJSONObj.getString("orderId");
+                                String finalAmount = dataJSONObj.getString("finalAmount");
+                                String status = dataJSONObj.getString("status");
+                                String orderDate = dataJSONObj.getString("createdAt");
+
+                                JSONObject productObj = dataJSONObj.getJSONArray("product").getJSONObject(0);
+                                String productTitle = productObj.getString("title");
+                                ArrayList<ProductImagesModel> imagesList = new ArrayList<>();
+                                JSONArray imageArray = productObj.optJSONArray("images");
+                                if (imageArray != null) {
+                                    for (int j = 0; j < imageArray.length(); j++) {
+                                        String imageUrl = imageArray.optString(j, null);
+                                        if (imageUrl != null) {
+                                            Log.e("JSONIMG", imageUrl);
+                                            imagesList.add(new ProductImagesModel(imageUrl));
+                                        }
+                                    }
+                                }
+
+                                myOrderArrayList.add(new MyOrderModel(orderId,finalAmount,status,orderDate,productTitle,imagesList));
+                            }
+                            if (myOrderArrayList.isEmpty()){
+                                progressBarDialog.dismiss();
+                                noDataLayout.setVisibility(View.VISIBLE);
+                                mainNestedLayout.setVisibility(View.GONE);
+                            }else {
+                                progressBarDialog.dismiss();
+                                noDataLayout.setVisibility(View.GONE);
+                                mainNestedLayout.setVisibility(View.VISIBLE);
+                                myOrdersAdapter = new MyOrdersAdapter(myOrderArrayList, MyOrdersActivity.this);
+                                myOrderRecyclerView.setAdapter(myOrdersAdapter);
+                            }
+                        } catch (JSONException e) {
+                            progressBarDialog.dismiss();
+                            Log.e("Exam Catch error", "Error parsing JSON: " + e.getMessage());
+                        }
+                    }
+                },
+                new Response.ErrorListener() {
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+                        progressBarDialog.dismiss();
+                        String errorMessage = "Error: " + error.toString();
+                        if (error.networkResponse != null) {
+                            try {
+                                // Parse the error response
+                                String jsonError = new String(error.networkResponse.data);
+                                JSONObject jsonObject = new JSONObject(jsonError);
+                                String message = jsonObject.optString("message", "Unknown error");
+                                // Now you can use the message
+                                Toast.makeText(MyOrdersActivity.this, message, Toast.LENGTH_LONG).show();
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            }
+                        }
+                        Log.e("ExamListError", errorMessage);
+                    }
+                }) {
+            @Override
+            public Map<String, String> getHeaders() throws AuthFailureError {
+                Map<String, String> headers = new HashMap<>();
+                headers.put("Content-Type", "application/json");
+                headers.put("Authorization", "Bearer " + authToken);
+                return headers;
+            }
+        };
+        MySingleton.getInstance(this).addToRequestQueue(jsonObjectRequest);
     }
 }

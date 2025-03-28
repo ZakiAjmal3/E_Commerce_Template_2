@@ -10,34 +10,55 @@ import android.text.SpannableStringBuilder;
 import android.text.TextUtils;
 import android.text.style.ForegroundColorSpan;
 import android.text.style.StrikethroughSpan;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.android.volley.AuthFailureError;
+import com.android.volley.Request;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.JsonObjectRequest;
 import com.bumptech.glide.Glide;
-import com.example.ecommercewhitelabel.Activities.HomePageActivity;
+import com.example.ecommercewhitelabel.Activities.MyOrdersActivity;
 import com.example.ecommercewhitelabel.Activities.SingleProductDetailsActivity;
+import com.example.ecommercewhitelabel.Model.MyOrderModel;
 import com.example.ecommercewhitelabel.Model.ProductDetailsModel;
+import com.example.ecommercewhitelabel.Model.ProductImagesModel;
 import com.example.ecommercewhitelabel.R;
+import com.example.ecommercewhitelabel.Utils.Constant;
 import com.example.ecommercewhitelabel.Utils.CustomRatingBar;
+import com.example.ecommercewhitelabel.Utils.MySingleton;
+import com.example.ecommercewhitelabel.Utils.SessionManager;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 public class CasualMensClothsForActivityAdapter extends RecyclerView.Adapter<CasualMensClothsForActivityAdapter.ViewHolder> {
     ArrayList<ProductDetailsModel> productDetailsList;
     Context context;
     SpannableStringBuilder spannableText;
+    SessionManager sessionManager;
+    String authToken;
     public CasualMensClothsForActivityAdapter(ArrayList<ProductDetailsModel> productDetailsList, Context context) {
         this.productDetailsList = productDetailsList;
         this.context = context;
+        this.sessionManager = new SessionManager(context);
+        authToken = sessionManager.getUserData().get("authToken");
     }
-
     @NonNull
     @Override
     public CasualMensClothsForActivityAdapter.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
@@ -45,7 +66,6 @@ public class CasualMensClothsForActivityAdapter extends RecyclerView.Adapter<Cas
         view = LayoutInflater.from(parent.getContext()).inflate(R.layout.dress_item_layout_for_all,parent,false);
         return new ViewHolder(view);
     }
-
     @Override
     public void onBindViewHolder(@NonNull CasualMensClothsForActivityAdapter.ViewHolder holder, @SuppressLint("RecyclerView") int position) {
         holder.productName.setText(productDetailsList.get(position).getProductTitle());
@@ -100,13 +120,104 @@ public class CasualMensClothsForActivityAdapter extends RecyclerView.Adapter<Cas
                 if (state == 0) {
                     holder.wishlistImg.setImageResource(R.drawable.ic_heart_red);
                     productDetailsList.get(position).setWishListImgToggle(1);
+                    addToWishList(position);
                 }else {
                     holder.wishlistImg.setImageResource(R.drawable.ic_heart_grey);
                     productDetailsList.get(position).setWishListImgToggle(0);
+                    removeFromWishList(position);
                 }
             }
         });
 
+    }
+
+    private void removeFromWishList(int position) {
+        String orderURL = Constant.BASE_URL + "wishlist/remove/" + productDetailsList.get(position).getProductId();
+        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.POST, orderURL, null,
+                new Response.Listener<JSONObject>() {
+                    @Override
+                    public void onResponse(JSONObject response) {
+                        Toast.makeText(context, "Item removed from wishlist", Toast.LENGTH_SHORT).show();
+                    }
+                },
+                new Response.ErrorListener() {
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+                        String errorMessage = "Error: " + error.toString();
+                        if (error.networkResponse != null) {
+                            try {
+                                // Parse the error response
+                                String jsonError = new String(error.networkResponse.data);
+                                JSONObject jsonObject = new JSONObject(jsonError);
+                                String message = jsonObject.optString("message", "Unknown error");
+                                // Now you can use the message
+                                Toast.makeText(context, message, Toast.LENGTH_LONG).show();
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            }
+                        }
+                        Log.e("ExamListError", errorMessage);
+                    }
+                }) {
+            @Override
+            public Map<String, String> getHeaders() throws AuthFailureError {
+                Map<String, String> headers = new HashMap<>();
+                headers.put("Content-Type", "application/json");
+                headers.put("Authorization", "Bearer " + authToken);
+                return headers;
+            }
+        };
+        MySingleton.getInstance(context).addToRequestQueue(jsonObjectRequest);
+    }
+
+    private void addToWishList(int position) {
+        String orderURL = Constant.BASE_URL + "wishlist";
+        String productId = productDetailsList.get(position).getProductId();
+        String userId = sessionManager.getUserData().get("userId");
+
+        JSONObject jsonObject = new JSONObject();
+        try {
+            jsonObject.put("productId", productId);
+            jsonObject.put("userId", userId);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.POST, orderURL, jsonObject,
+                new Response.Listener<JSONObject>() {
+                    @Override
+                    public void onResponse(JSONObject response) {
+                        Toast.makeText(context, "Item added to wishlist", Toast.LENGTH_SHORT).show();
+                    }
+                },
+                new Response.ErrorListener() {
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+                        String errorMessage = "Error: " + error.toString();
+                        if (error.networkResponse != null) {
+                            try {
+                                // Parse the error response
+                                String jsonError = new String(error.networkResponse.data);
+                                JSONObject jsonObject = new JSONObject(jsonError);
+                                String message = jsonObject.optString("message", "Unknown error");
+                                // Now you can use the message
+                                Toast.makeText(context, message, Toast.LENGTH_LONG).show();
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            }
+                        }
+                        Log.e("ExamListError", errorMessage);
+                    }
+                }) {
+            @Override
+            public Map<String, String> getHeaders() throws AuthFailureError {
+                Map<String, String> headers = new HashMap<>();
+                headers.put("Content-Type", "application/json");
+                headers.put("Authorization", "Bearer " + authToken);
+                return headers;
+            }
+        };
+        MySingleton.getInstance(context).addToRequestQueue(jsonObjectRequest);
     }
 
     @Override
@@ -134,7 +245,6 @@ public class CasualMensClothsForActivityAdapter extends RecyclerView.Adapter<Cas
                     Intent intent = new Intent(context, SingleProductDetailsActivity.class);
                     intent.putExtra("productId",productDetailsList.get(getAdapterPosition()).getProductId());
                     context.startActivity(intent);
-
                 }
             });
         }

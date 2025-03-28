@@ -15,6 +15,7 @@ import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.bumptech.glide.Glide;
 import com.example.ecommercewhitelabel.Activities.OrderSingleViewActivity;
 import com.example.ecommercewhitelabel.Fragment.WishListFragment;
 import com.example.ecommercewhitelabel.Model.MyOrderModel;
@@ -22,7 +23,12 @@ import com.example.ecommercewhitelabel.Model.ProductDetailsModel;
 import com.example.ecommercewhitelabel.R;
 import com.example.ecommercewhitelabel.Utils.CustomRatingBar;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Date;
+import java.util.Locale;
 
 public class MyOrdersAdapter extends RecyclerView.Adapter<MyOrdersAdapter.ViewHolder> {
     ArrayList<MyOrderModel> productDetailsList;
@@ -44,11 +50,40 @@ public class MyOrdersAdapter extends RecyclerView.Adapter<MyOrdersAdapter.ViewHo
     public void onBindViewHolder(@NonNull MyOrdersAdapter.ViewHolder holder, @SuppressLint("RecyclerView") int position) {
 
         holder.orderStatusTxt.setText(productDetailsList.get(position).getOrderStatus());
-        holder.orderDateTxt.setText(productDetailsList.get(position).getOrderDate());
-        holder.orderIdTxt.setText("Order id: " +productDetailsList.get(position).getOrderId());
-        holder.orderProductTitle.setText(productDetailsList.get(position).getOrderProductTitle());
-        holder.orderPrice.setText("₹ " +productDetailsList.get(position).getOrderPrice());
-//        holder.imageView.setImageResource(productDetailsList.get(position).getProductImage());
+
+        String orderStatus = productDetailsList.get(position).getOrderStatus();
+        if (orderStatus.equalsIgnoreCase("Pending")){
+            holder.orderStatusTxt.setTextColor(context.getResources().getColor(R.color.red_orange));
+        }
+        else if (orderStatus.equalsIgnoreCase("Confirmed") || orderStatus.equalsIgnoreCase("Paid")|| orderStatus.equalsIgnoreCase("Shipped") || orderStatus.equalsIgnoreCase("Delivered")) {
+            holder.orderStatusTxt.setTextColor(context.getResources().getColor(R.color.green));
+        }
+        else if (orderStatus.equalsIgnoreCase("Failed") || orderStatus.equalsIgnoreCase("Cancelled")) {
+            holder.orderStatusTxt.setTextColor(context.getResources().getColor(R.color.red));
+        }
+
+        String orderDate = productDetailsList.get(position).getOrderDate();
+        String formattedDate = null;
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.ENGLISH);
+        simpleDateFormat.setTimeZone(java.util.TimeZone.getTimeZone("UTC"));
+        SimpleDateFormat outputFormat = new SimpleDateFormat("MMMM dd, yyyy", Locale.ENGLISH);
+        try {
+            Date date = simpleDateFormat.parse(orderDate); // Parse timestamp
+            formattedDate = outputFormat.format(date); // Convert to required format
+            System.out.println(formattedDate); // Output: March 27, 2025
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+
+        holder.orderDateTxt.setText(formattedDate);
+        holder.orderIdTxt.setText("Order id: " + productDetailsList.get(position).getOrderId());
+        holder.orderProductTitle.setText(productDetailsList.get(position).getProductTitle());
+        holder.orderPrice.setText("₹ " + productDetailsList.get(position).getFinalAmount());
+
+        Glide.with(context)
+                .load(productDetailsList.get(position).getImagesModelArrayList().get(0).getProductImage())
+                .error(R.drawable.no_image)
+                .into(holder.productImg);
 
     }
 
@@ -72,11 +107,11 @@ public class MyOrdersAdapter extends RecyclerView.Adapter<MyOrdersAdapter.ViewHo
                 @Override
                 public void onClick(View v) {
                     Intent intent = new Intent(context, OrderSingleViewActivity.class);
-                    intent.putExtra("orderStatus", productDetailsList.get(getAdapterPosition()).getOrderStatus());
+//                    intent.putExtra("orderStatus", productDetailsList.get(getAdapterPosition()).getOrderStatus());
                     intent.putExtra("orderDate", productDetailsList.get(getAdapterPosition()).getOrderDate());
                     intent.putExtra("orderId", productDetailsList.get(getAdapterPosition()).getOrderId());
-                    intent.putExtra("orderProductTitle", productDetailsList.get(getAdapterPosition()).getOrderProductTitle());
-                    intent.putExtra("orderPrice", productDetailsList.get(getAdapterPosition()).getOrderPrice());
+//                    intent.putExtra("orderProductTitle", productDetailsList.get(getAdapterPosition()).getProductTitle());
+//                    intent.putExtra("orderPrice", productDetailsList.get(getAdapterPosition()).getFinalAmount());
                     context.startActivity(intent);
                 }
             });

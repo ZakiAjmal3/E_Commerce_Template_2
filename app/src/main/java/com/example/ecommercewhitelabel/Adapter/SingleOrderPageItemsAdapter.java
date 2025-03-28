@@ -12,6 +12,7 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.bumptech.glide.Glide;
 import com.example.ecommercewhitelabel.Activities.HomePageActivity;
 import com.example.ecommercewhitelabel.Model.SingleOrderPageItemsModel;
 import com.example.ecommercewhitelabel.R;
@@ -38,7 +39,11 @@ public class SingleOrderPageItemsAdapter extends RecyclerView.Adapter<SingleOrde
 
         holder.productTitle.setText(productDetailsList.get(position).getProductTitle());
         holder.productPrice.setText("₹ " + productDetailsList.get(position).getProductPrice());
-//        holder.productImg.setImageResource(productDetailsList.get(position).getProductImage());
+
+        Glide.with(context)
+                .load(productDetailsList.get(position).getProductImgUrl())
+                .error(R.drawable.no_image)
+                .into(holder.productImg);
 
         holder.buyItAgain.setOnClickListener(new View.OnClickListener() {
             @Override

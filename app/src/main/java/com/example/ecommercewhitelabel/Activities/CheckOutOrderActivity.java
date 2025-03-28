@@ -71,7 +71,7 @@ public class CheckOutOrderActivity extends AppCompatActivity {
     Dialog progressBarDialog;
     RadioGroup radioGroup;
     RadioButton radio1, radio2;
-    String paymentMethodStr = null,selectedAddressId = null;
+    String paymentMethodStr = "",selectedAddressId = "";
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -120,9 +120,11 @@ public class CheckOutOrderActivity extends AppCompatActivity {
             String cartId = cartItemModelArrayList.get(i).getCartId();
             String productId = cartItemModelArrayList.get(i).getProductId();
             String name = cartItemModelArrayList.get(i).getProductTitle();
+            String mrp = cartItemModelArrayList.get(i).getProductMRP();
             String price = cartItemModelArrayList.get(i).getProductPrice();
+            String discountAMT = cartItemModelArrayList.get(i).getDiscountAmount();
             String quantity = cartItemModelArrayList.get(i).getProductQuantity();
-            checkOutModelArrayList.add(new CheckOutModel(cartId,productId,name,price,quantity,null));
+            checkOutModelArrayList.add(new CheckOutModel(cartId,productId,name,price,mrp,discountAMT,quantity,null));
         }
 
         checkoutRecyclerView.setAdapter(new CheckOutAdapter(checkOutModelArrayList,this));
@@ -290,7 +292,7 @@ public class CheckOutOrderActivity extends AppCompatActivity {
     public void setOrderSummaryDetails() {
         discount = getIntent().getIntExtra("additionDiscount",0);
         for (int i = 0; i < checkOutModelArrayList.size(); i++) {
-            totalAmount += Integer.parseInt(checkOutModelArrayList.get(i).getProductPrice()) * Integer.parseInt(cartItemModelArrayList.get(i).getProductQuantity());
+            totalAmount += Integer.parseInt(checkOutModelArrayList.get(i).getProductMRP()) * Integer.parseInt(cartItemModelArrayList.get(i).getProductQuantity());
         }
         if (totalAmount > 500){
             finalTotalAmount = totalAmount;
@@ -408,6 +410,46 @@ public class CheckOutOrderActivity extends AppCompatActivity {
         }
 
         JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, addAddressURL, null,
+                new Response.Listener<JSONObject>() {
+                    @Override
+                    public void onResponse(JSONObject response) {
+                        clearCart();
+                    }
+                },
+                new Response.ErrorListener() {
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+                        progressBarDialog.dismiss();
+                        String errorMessage = "Error: " + error.toString();
+                        if (error.networkResponse != null) {
+                            try {
+                                // Parse the error response
+                                String jsonError = new String(error.networkResponse.data);
+                                JSONObject jsonObject = new JSONObject(jsonError);
+                                String message = jsonObject.optString("message", "Unknown error");
+                                // Now you can use the message
+                                Toast.makeText(CheckOutOrderActivity.this, message, Toast.LENGTH_LONG).show();
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            }
+                        }
+                        Log.e("ExamListError", errorMessage);
+                    }
+                }) {
+            @Override
+            public Map<String, String> getHeaders() throws AuthFailureError {
+                Map<String, String> headers = new HashMap<>();
+                headers.put("Content-Type", "application/json");
+                headers.put("Authorization", "Bearer " + authToken);
+                return headers;
+            }
+        };
+        MySingleton.getInstance(this).addToRequestQueue(jsonObjectRequest);
+    }
+
+    private void clearCart() {
+        String clearCartURL = Constant.BASE_URL + "cart/clean";
+        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.POST, clearCartURL, null,
                 new Response.Listener<JSONObject>() {
                     @Override
                     public void onResponse(JSONObject response) {

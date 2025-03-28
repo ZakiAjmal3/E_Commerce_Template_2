@@ -1,14 +1,26 @@
 package com.example.ecommercewhitelabel.Model;
 
-public class MyOrderModel {
-    String orderId,orderStatus,orderDate,orderProductTitle,orderPrice;
+import java.util.ArrayList;
 
-    public MyOrderModel(String orderId, String orderStatus, String orderDate, String orderProductTitle, String orderPrice) {
+public class MyOrderModel {
+    String orderId,finalAmount,orderStatus,orderDate,productTitle;
+    ArrayList<ProductImagesModel> imagesModelArrayList;
+
+    public MyOrderModel(String orderId, String finalAmount, String orderStatus, String orderDate, String productTitle, ArrayList<ProductImagesModel> imagesModelArrayList) {
         this.orderId = orderId;
+        this.finalAmount = finalAmount;
         this.orderStatus = orderStatus;
         this.orderDate = orderDate;
-        this.orderProductTitle = orderProductTitle;
-        this.orderPrice = orderPrice;
+        this.productTitle = productTitle;
+        this.imagesModelArrayList = imagesModelArrayList;
+    }
+
+    public ArrayList<ProductImagesModel> getImagesModelArrayList() {
+        return imagesModelArrayList;
+    }
+
+    public void setImagesModelArrayList(ArrayList<ProductImagesModel> imagesModelArrayList) {
+        this.imagesModelArrayList = imagesModelArrayList;
     }
 
     public String getOrderId() {
@@ -17,6 +29,14 @@ public class MyOrderModel {
 
     public void setOrderId(String orderId) {
         this.orderId = orderId;
+    }
+
+    public String getFinalAmount() {
+        return finalAmount;
+    }
+
+    public void setFinalAmount(String finalAmount) {
+        this.finalAmount = finalAmount;
     }
 
     public String getOrderStatus() {
@@ -35,19 +55,11 @@ public class MyOrderModel {
         this.orderDate = orderDate;
     }
 
-    public String getOrderProductTitle() {
-        return orderProductTitle;
+    public String getProductTitle() {
+        return productTitle;
     }
 
-    public void setOrderProductTitle(String orderProductTitle) {
-        this.orderProductTitle = orderProductTitle;
-    }
-
-    public String getOrderPrice() {
-        return orderPrice;
-    }
-
-    public void setOrderPrice(String orderPrice) {
-        this.orderPrice = orderPrice;
+    public void setProductTitle(String productTitle) {
+        this.productTitle = productTitle;
     }
 }

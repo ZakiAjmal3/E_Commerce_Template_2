@@ -56,7 +56,7 @@ public class CartItemAdapter extends RecyclerView.Adapter<CartItemAdapter.ViewHo
     public CartItemAdapter(ArrayList<CartItemModel> productDetailsList, Fragment context) {
         this.productDetailsList = productDetailsList;
         this.context = context;
-        sessionManager = new SessionManager(context.getContext());
+        this.sessionManager = new SessionManager(context.getActivity());
         authToken = sessionManager.getUserData().get("authToken");
     }
 

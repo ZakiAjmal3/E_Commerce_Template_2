@@ -1,15 +1,35 @@
 package com.example.ecommercewhitelabel.Model;
 
 public class CheckOutModel {
-    String cartId,productId,productTitle,productPrice,productQuantity,productImg;
+    String cartId,productId,productTitle,productPrice,productMRP,productDiscountAMT,productQuantity,productImg;
 
-    public CheckOutModel(String cartId,String productId, String productTitle, String productPrice, String productQuantity, String productImg) {
+    public CheckOutModel(String cartId,String productId, String productTitle, String productPrice,
+                         String productMRP, String productDiscountAMT, String productQuantity,
+                         String productImg) {
         this.cartId = cartId;
         this.productId = productId;
         this.productTitle = productTitle;
         this.productPrice = productPrice;
+        this.productMRP = productMRP;
+        this.productDiscountAMT = productDiscountAMT;
         this.productQuantity = productQuantity;
         this.productImg = productImg;
+    }
+
+    public String getProductDiscountAMT() {
+        return productDiscountAMT;
+    }
+
+    public void setProductDiscountAMT(String productDiscountAMT) {
+        this.productDiscountAMT = productDiscountAMT;
+    }
+
+    public String getProductMRP() {
+        return productMRP;
+    }
+
+    public void setProductMRP(String productMRP) {
+        this.productMRP = productMRP;
     }
 
     public String getCartId() {

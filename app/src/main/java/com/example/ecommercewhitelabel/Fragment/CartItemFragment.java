@@ -376,6 +376,10 @@ public class CartItemFragment extends Fragment {
                 int couponDiscountValue,newFinalAmount,newTotalAmount,newDiscountAmount;
                 couponType = couponSelectingModelArrayList.get(i).getCouponType();
                 couponDiscountType = couponSelectingModelArrayList.get(i).getDiscountType();
+                discount = 0;
+                for (int j = 0; j < cartItemModelArrayList.size(); j++){
+                    discount += Integer.parseInt(cartItemModelArrayList.get(j).getDiscountAmount());
+                }
                 if (couponType.equalsIgnoreCase("ORDER")){
                     couponDiscountValue = Integer.parseInt(couponSelectingModelArrayList.get(i).getDiscountValue());
                     if (couponDiscountType.equalsIgnoreCase("PERCENTAGE")){
@@ -468,6 +472,10 @@ public class CartItemFragment extends Fragment {
         int couponDiscountValue,newFinalAmount,newTotalAmount,newDiscountAmount;
         couponType = couponSelectingModelArrayList.get(position).getCouponType();
         couponDiscountType = couponSelectingModelArrayList.get(position).getDiscountType();
+        discount = 0;
+        for (int i = 0; i < cartItemModelArrayList.size(); i++){
+            discount += Integer.parseInt(cartItemModelArrayList.get(i).getDiscountAmount());
+        }
         if (couponType.equalsIgnoreCase("ORDER")){
             couponDiscountValue = Integer.parseInt(couponSelectingModelArrayList.get(position).getDiscountValue());
             if (couponDiscountType.equalsIgnoreCase("PERCENTAGE")){

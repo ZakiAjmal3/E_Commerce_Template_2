@@ -1,13 +1,23 @@
 package com.example.ecommercewhitelabel.Model;
 
 public class RatingAndReviewModel {
-    String rating,reviewerName,reviewDate,reviewContent;
-    public RatingAndReviewModel(String rating, String reviewerName, String reviewDate, String reviewContent) {
-        this.rating = rating;
+    String ratingId,rating,reviewerName,reviewDate,reviewContent;
+    public RatingAndReviewModel(String reviewId,String ratingPoint, String reviewerName, String reviewDate, String reviewContent) {
+        this.ratingId = reviewId;
+        this.rating = ratingPoint;
         this.reviewerName = reviewerName;
         this.reviewDate = reviewDate;
         this.reviewContent = reviewContent;
     }
+
+    public String getRatingId() {
+        return ratingId;
+    }
+
+    public void setRatingId(String ratingId) {
+        this.ratingId = ratingId;
+    }
+
     public String getRating() {
         return rating;
     }

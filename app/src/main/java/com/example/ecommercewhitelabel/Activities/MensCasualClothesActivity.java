@@ -12,6 +12,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.ImageView;
@@ -29,6 +30,7 @@ import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 import androidx.core.widget.NestedScrollView;
+import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -59,14 +61,17 @@ public class MensCasualClothesActivity extends AppCompatActivity {
     ImageView backBtn;
     CardView filterCardView;
     RecyclerView casualDressRecyclerView;
+    CasualMensClothsForActivityAdapter casualMensClothsForActivityAdapter;
     ArrayList<ProductDetailsModel> casualDressArrayList;
     ArrayAdapter<String> dropdownArrayAdapter;
     AutoCompleteTextView autoCompleteDropdownTV;
+    String filterLowPrice = "", filterHighPrice = "";
+    final String[] selectedItem = {""};
     SessionManager sessionManager;
     String authToken;
     NestedScrollView dressNestedScroll;
     ProgressBar nextItemLoadingProgressBar;
-    int itemPerPage = 5, totalPages = 1,currentPage = 1;
+    int itemPerPage = 10, totalPages = 1,currentPage = 1;
     Dialog progressBarDialog;
     RelativeLayout mainLayout,noDataLayout;
     @Override
@@ -126,14 +131,8 @@ public class MensCasualClothesActivity extends AppCompatActivity {
 
         setUpSpinner();
 
-        casualDressRecyclerView.setLayoutManager(new LinearLayoutManager(this));
+        casualDressRecyclerView.setLayoutManager(new GridLayoutManager(this,2));
         casualDressArrayList = new ArrayList<>();
-//        casualDressArrayList.add(new ProductDetailsModel("Product 1","200","2.5",0));
-//        casualDressArrayList.add(new ProductDetailsModel("Product 2","300","5",0));
-//        casualDressArrayList.add(new ProductDetailsModel("Product 3","250","3",0));
-//        casualDressArrayList.add(new ProductDetailsModel("Product 4","3000","4.5",0));
-//        casualDressArrayList.add(new ProductDetailsModel("Product 5","199","1.2",0));
-
 
         casualDressRecyclerView.setAdapter(new CasualMensClothsForActivityAdapter(casualDressArrayList,this));
 
@@ -173,7 +172,47 @@ public class MensCasualClothesActivity extends AppCompatActivity {
         dropdownArrayAdapter = new ArrayAdapter<>(this, R.layout.drop_down_item_text_layout, languages);
         autoCompleteDropdownTV.setAdapter(dropdownArrayAdapter);
         autoCompleteDropdownTV.setDropDownBackgroundDrawable(new ColorDrawable(Color.WHITE));
+        autoCompleteDropdownTV.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                selectedItem[0] = parent.getItemAtPosition(position).toString();
+                sortProducts();
+            }
+        });
     }
+
+    private void sortProducts() {
+        if (selectedItem[0].equals("Low Price")) {
+            int p1, p2;
+            for (int i = 0; i < casualDressArrayList.size(); i++) {
+                for (int j = i + 1; j < casualDressArrayList.size(); j++) {
+                    p1 = Integer.parseInt(casualDressArrayList.get(i).getProductPrice());
+                    p2 = Integer.parseInt(casualDressArrayList.get(j).getProductPrice());
+                    if (p1 > p2) {
+                        ProductDetailsModel temp = casualDressArrayList.get(i);
+                        casualDressArrayList.set(i, casualDressArrayList.get(j));
+                        casualDressArrayList.set(j, temp);
+                    }
+                }
+            }
+            casualMensClothsForActivityAdapter.notifyDataSetChanged();
+        }else {
+            int p1, p2;
+            for (int i = 0; i < casualDressArrayList.size(); i++) {
+                for (int j = i + 1; j < casualDressArrayList.size(); j++) {
+                    p1 = Integer.parseInt(casualDressArrayList.get(i).getProductPrice());
+                    p2 = Integer.parseInt(casualDressArrayList.get(j).getProductPrice());
+                    if (p1 < p2) {
+                        ProductDetailsModel temp = casualDressArrayList.get(i);
+                        casualDressArrayList.set(i, casualDressArrayList.get(j));
+                        casualDressArrayList.set(j, temp);
+                    }
+                }
+            }
+            casualMensClothsForActivityAdapter.notifyDataSetChanged();
+        }
+    }
+
     Dialog filterDialog;
     @SuppressLint("ResourceAsColor")
     private void openFilterDialog() {
@@ -191,7 +230,8 @@ public class MensCasualClothesActivity extends AppCompatActivity {
         }
     }
     private void getNewArrivalProducts() {
-        String newArrivalURL = Constant.BASE_URL + "product/" + sessionManager.getStoreId() + "?pageNumber=" + currentPage + "&pageSize=" + itemPerPage;
+        String newArrivalURL = Constant.BASE_URL + "product/" + sessionManager.getStoreId() + "?pageNumber="
+                + currentPage + "&pageSize=" + itemPerPage;
         Log.e("ProductsURL", newArrivalURL);
 
         JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, newArrivalURL, null,
@@ -250,13 +290,18 @@ public class MensCasualClothesActivity extends AppCompatActivity {
                                     ));
                                 }
                             }
-
                             if (!casualDressArrayList.isEmpty()) {
-                                casualDressRecyclerView.setAdapter(new CasualMensClothsForActivityAdapter(casualDressArrayList, MensCasualClothesActivity.this));
-                                nextItemLoadingProgressBar.setVisibility(View.GONE);
-                                mainLayout.setVisibility(View.VISIBLE);
-                                noDataLayout.setVisibility(View.GONE);
-                                progressBarDialog.dismiss();
+                                if (changingWishListIcon())
+                                if (casualMensClothsForActivityAdapter == null) {
+                                    casualMensClothsForActivityAdapter = new CasualMensClothsForActivityAdapter(casualDressArrayList, MensCasualClothesActivity.this);
+                                    casualDressRecyclerView.setAdapter(casualMensClothsForActivityAdapter);
+                                    nextItemLoadingProgressBar.setVisibility(View.GONE);
+                                    mainLayout.setVisibility(View.VISIBLE);
+                                    noDataLayout.setVisibility(View.GONE);
+                                    progressBarDialog.dismiss();
+                                }else {
+                                    sortProducts();
+                                }
                             } else {
                                 noDataLayout.setVisibility(View.VISIBLE);
                                 mainLayout.setVisibility(View.GONE);
@@ -297,6 +342,20 @@ public class MensCasualClothesActivity extends AppCompatActivity {
         };
 
         MySingleton.getInstance(this).addToRequestQueue(jsonObjectRequest);
+    }
+
+    private boolean changingWishListIcon() {
+        ArrayList<ProductDetailsModel> wishlistItem = new ArrayList<>();
+        wishlistItem = sessionManager.getWishList();
+        Log.e("wish",wishlistItem.toString());
+        for (int i = 0; i < casualDressArrayList.size(); i++) {
+            for (int j = 0; j < wishlistItem.size(); j++) {
+                if (casualDressArrayList.get(i).getProductId().equals(wishlistItem.get(j).getProductId())) {
+                    casualDressArrayList.get(i).setWishListImgToggle(1);
+                }
+            }
+        }
+        return true;
     }
 
     private String parseTags(JSONArray tagsArray) throws JSONException {

@@ -12,8 +12,6 @@
     <string name="product_description">"Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation."</string>
 
     <string-array name="mens_casual_sort_by_item">
-        <item>Most Popular</item>
-        <item>Newest</item>
         <item>Low Price</item>
         <item>High Price</item>
     </string-array>

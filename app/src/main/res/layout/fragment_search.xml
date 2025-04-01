@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:background="@color/white">
 
     <androidx.appcompat.widget.SearchView
@@ -11,5 +12,51 @@
         android:layout_height="50dp"
         android:background="@drawable/rounded_corner_box_for_spinner_bg"
         android:layout_margin="15dp"/>
+    <RelativeLayout
+        android:id="@+id/noDataLayout"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@color/white"
+        android:visibility="visible">
+        <ImageView
+            android:id="@+id/emptyIV"
+            android:layout_width="200dp"
+            android:layout_height="200dp"
+            android:layout_centerInParent="true"
+            android:src="@drawable/ic_empty_box"/>
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="No Item Found"
+            android:textColor="@color/black"
+            android:textSize="20sp"
+            android:layout_below="@id/emptyIV"
+            android:layout_centerHorizontal="true"/>
+    </RelativeLayout>
+    <androidx.core.widget.NestedScrollView
+        android:id="@+id/dressNestedScroll"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_below="@id/searchView"
+        android:layout_margin="10dp">
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/casualDressRecyclerView"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                tools:listitem="@layout/dress_item_layout_for_all" />
+            <ProgressBar
+                android:id="@+id/nextItemLoadingProgressBar"
+                android:layout_width="25dp"
+                android:layout_height="25dp"
+                android:visibility="gone"
+                android:layout_below="@id/casualDressRecyclerView"
+                android:indeterminate="true"
+                android:indeterminateTint="@color/black"
+                android:layout_centerHorizontal="true"/>
+        </RelativeLayout>
+    </androidx.core.widget.NestedScrollView>
 
 </RelativeLayout>

@@ -169,7 +169,8 @@
             android:padding="10dp"
             android:layout_margin="20dp"
             android:background="@drawable/rounded_corner_box_for_spinner_bg"
-            android:layout_below="@id/orContinueWithRL">
+            android:layout_below="@id/orContinueWithRL"
+            android:visibility="gone">
             <RelativeLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -197,6 +198,7 @@
             android:layout_height="wrap_content"
             android:layout_below="@+id/continueWithGoogleRLBTN"
             android:layout_centerHorizontal="true"
+            android:layout_marginTop="10dp"
             android:layout_marginBottom="20dp">
             <TextView
                 android:id="@+id/t3"

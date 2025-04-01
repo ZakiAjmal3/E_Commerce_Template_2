@@ -64,12 +64,10 @@
             >
             <LinearLayout
                 android:layout_width="0dp"
-                android:layout_height="wrap_content"
+                android:layout_height="45dp"
                 android:orientation="horizontal"
                 android:background="@drawable/rounded_corner_box_grey_bg"
                 android:weightSum="3"
-                android:paddingTop="5dp"
-                android:paddingBottom="5dp"
                 android:layout_marginRight="15dp"
                 android:layout_weight="0.75"
                 android:paddingLeft="15dp"
@@ -115,13 +113,13 @@
             <Button
                 android:id="@+id/addToCartBtn"
                 android:layout_width="0dp"
-                android:layout_height="match_parent"
+                android:layout_height="50dp"
                 android:text="Add to cart"
                 android:layout_weight="1.25"
+                android:paddingTop="5dp"
+                android:paddingBottom="5dp"
                 android:backgroundTint="@color/black"
                 android:textColor="@color/white"
-                android:paddingTop="6dp"
-                android:paddingBottom="6dp"
                 android:textSize="18sp"
                 android:layout_gravity="center"/>
         </LinearLayout>
@@ -142,7 +140,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="300dp"
                 android:layout_margin="15dp"
-                app:cardBackgroundColor="@color/light_dark_grey"
+                app:cardBackgroundColor="@color/light_grey2"
                 app:strokeWidth="0dp">
                 <ImageView
                     android:id="@+id/productImgMain"
@@ -178,14 +176,6 @@
                 android:layout_marginLeft="15dp"
                 android:layout_marginRight="15dp"/>
             <TextView
-                android:id="@+id/ratingBarTxt"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="5.0/5"
-                android:textColor="@color/black"
-                android:layout_below="@id/productTitleTxt"
-                android:layout_toRightOf="@id/ratingBar"/>
-            <TextView
                 android:id="@+id/productPriceTxt"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -197,23 +187,12 @@
                 android:textStyle="bold"
                 android:fontFamily="sans-serif-condensed"/>
 
-            <WebView
-                android:id="@+id/productDescriptionTxt"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_below="@id/productPriceTxt"
-                android:layout_marginLeft="15dp"
-                android:layout_marginTop="20dp"
-                android:layout_marginRight="15dp"
-                android:text="@string/product_description"
-                android:textSize="15sp" />
-
             <View
                 android:id="@+id/v1"
                 android:layout_width="match_parent"
                 android:layout_height="1dp"
                 android:background="@color/light_dark_grey"
-                android:layout_below="@id/productDescriptionTxt"
+                android:layout_below="@id/productPriceTxt"
                 android:layout_margin="15dp"/>
             <TextView
                 android:id="@+id/selectColorTxt"

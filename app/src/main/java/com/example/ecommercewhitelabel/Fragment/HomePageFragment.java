@@ -1,23 +1,17 @@
 package com.example.ecommercewhitelabel.Fragment;
 
 import android.animation.Animator;
+import android.animation.AnimatorListenerAdapter;
 import android.animation.AnimatorSet;
 import android.animation.ObjectAnimator;
-import android.app.Dialog;
 import android.content.Intent;
-import android.graphics.Color;
-import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.util.Log;
-import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.ViewTreeObserver;
-import android.view.Window;
-import android.view.WindowManager;
 import android.view.animation.DecelerateInterpolator;
 import android.widget.Button;
 import android.widget.HorizontalScrollView;
@@ -39,7 +33,6 @@ import com.android.volley.Request;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
-import com.example.ecommercewhitelabel.Activities.AddressShowingInputActivity;
 import com.example.ecommercewhitelabel.Activities.MensCasualClothesActivity;
 import com.example.ecommercewhitelabel.Adapter.HomePageAdapter.BrowseByDressStyleAdapter;
 import com.example.ecommercewhitelabel.Adapter.HomePageAdapter.ProductDetailsForFragmentAdapter;
@@ -48,7 +41,6 @@ import com.example.ecommercewhitelabel.Model.ProductDetailsModel;
 import com.example.ecommercewhitelabel.Model.ProductImagesModel;
 import com.example.ecommercewhitelabel.R;
 import com.example.ecommercewhitelabel.Utils.Constant;
-import com.example.ecommercewhitelabel.Utils.MySingleton;
 import com.example.ecommercewhitelabel.Utils.MySingletonFragment;
 import com.example.ecommercewhitelabel.Utils.SessionManager;
 
@@ -78,6 +70,7 @@ public class HomePageFragment extends Fragment {
     TextView headTxt1,headTxt2,viewAllDressTxtBtn,topSellingViewAllTxtBtn,brandNumCountTxt,brandNumCountBelowTxt,qualityNumCountTxt,customerNumCountTxt;
     SessionManager sessionManager;
     String authToken;
+    ImageView rightIndicatorNewArrival,rightIndicatorTopSelling;
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -122,29 +115,33 @@ public class HomePageFragment extends Fragment {
                 ObjectAnimator rotate2 = ObjectAnimator.ofFloat(starTwo, "rotation", 360f, 0f);
                 rotate2.setDuration(2000);
                 rotate2.start();
-                ObjectAnimator translateXAnim1 = ObjectAnimator.ofFloat(brandLogoLinearLayout, "translationX", 1200f, -2000f);
-                translateXAnim1.setDuration(2000);
-                translateXAnim1.start();
                 // Post a new runnable to repeat the rotation after 500ms
                 handler.postDelayed(this, 2000);
             }
         };
         handler.post(rotationRunnable);
 
-        // Create a runnable that will perform the rotation
+// Create a runnable for continuous translation animation
         rotationRunnable2 = new Runnable() {
             @Override
             public void run() {
-                // Create the rotation animation (0 to 360 degrees)
-                ObjectAnimator translateXAnim1 = ObjectAnimator.ofFloat(brandLogoLinearLayout, "translationX", 1200f, -2000f);
+                ObjectAnimator translateXAnim1 = ObjectAnimator.ofFloat(brandLogoLinearLayout, "translationX", 1000f, -1700f);
                 translateXAnim1.setDuration(5000);
+
+                // Add listener to restart animation on completion
+                translateXAnim1.addListener(new AnimatorListenerAdapter() {
+                    @Override
+                    public void onAnimationEnd(Animator animation) {
+                        // Restart animation immediately
+                        handler.post(rotationRunnable2);
+                    }
+                });
+
                 translateXAnim1.start();
-                // Post a new runnable to repeat the rotation after 500ms
-                handler2.postDelayed(this, 5000);
             }
         };
-        // Start the first rotation
-        handler2.post(rotationRunnable2);
+// Start the first animation
+        handler.post(rotationRunnable2);
 
 // Calling the animateCount function for each TextView
         animateCount(brandNumCountTxt, 200, 30); // Brand count with slower update
@@ -280,12 +277,16 @@ public class HomePageFragment extends Fragment {
             public void onAnimationRepeat(Animator animation) {}
         });
 
+        rightIndicatorTopSelling = view.findViewById(R.id.rightIndicatorTopSelling);
+        rightIndicatorNewArrival = view.findViewById(R.id.rightIndicatorNewArrival);
         newArrivalRecycler = view.findViewById(R.id.newArrivalRecyclerView);
         topSellingRecycler = view.findViewById(R.id.topSellingRecyclerView);
         browseByDressRecycler = view.findViewById(R.id.browseByDressRecyclerView);
         browseByDressRecycler.setLayoutManager(new GridLayoutManager(getContext(),2));
-        newArrivalRecycler.setLayoutManager(new LinearLayoutManager(getContext(),LinearLayoutManager.HORIZONTAL,false));
-        topSellingRecycler.setLayoutManager(new LinearLayoutManager(getContext(),LinearLayoutManager.HORIZONTAL,false));
+        LinearLayoutManager newArrivalLayoutManager = new LinearLayoutManager(getContext(),LinearLayoutManager.HORIZONTAL,false);
+        newArrivalRecycler.setLayoutManager(newArrivalLayoutManager);
+        LinearLayoutManager topSellingLayoutManager = new LinearLayoutManager(getContext(),LinearLayoutManager.HORIZONTAL,false);
+        topSellingRecycler.setLayoutManager(topSellingLayoutManager);
 
         newArrivalList = new ArrayList<>();
 //        newArrivalList.add(new ProductDetailsModel("Product 1","200","2.5",0));
@@ -303,6 +304,41 @@ public class HomePageFragment extends Fragment {
         browseByDressRecycler.setAdapter(new BrowseByDressStyleAdapter(browseByDressList,HomePageFragment.this));
         newArrivalRecycler.setAdapter(new ProductDetailsForFragmentAdapter(newArrivalList,HomePageFragment.this));
         topSellingRecycler.setAdapter(new ProductDetailsForFragmentAdapter(newArrivalList,HomePageFragment.this));
+
+        // Add Scroll Listener
+        newArrivalRecycler.addOnScrollListener(new RecyclerView.OnScrollListener() {
+            @Override
+            public void onScrolled(@NonNull RecyclerView recyclerView, int dx, int dy) {
+                super.onScrolled(recyclerView, dx, dy);
+
+                int lastVisible = newArrivalLayoutManager.findLastVisibleItemPosition();
+                int totalItems = recyclerView.getAdapter().getItemCount();
+
+                // Show right arrow if there are more items ahead
+                if (lastVisible < totalItems - 1) {
+                    rightIndicatorNewArrival.setVisibility(View.VISIBLE);
+                } else {
+                    rightIndicatorNewArrival.setVisibility(View.GONE);
+                }
+            }
+        });
+        // Add Scroll Listener
+        topSellingRecycler.addOnScrollListener(new RecyclerView.OnScrollListener() {
+            @Override
+            public void onScrolled(@NonNull RecyclerView recyclerView, int dx, int dy) {
+                super.onScrolled(recyclerView, dx, dy);
+
+                int lastVisible = topSellingLayoutManager.findLastVisibleItemPosition();
+                int totalItems = recyclerView.getAdapter().getItemCount();
+
+                // Show right arrow if there are more items ahead
+                if (lastVisible < totalItems - 1) {
+                    rightIndicatorTopSelling.setVisibility(View.VISIBLE);
+                } else {
+                    rightIndicatorTopSelling.setVisibility(View.GONE);
+                }
+            }
+        });
 
         shopNowBtn.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -379,7 +415,9 @@ public class HomePageFragment extends Fragment {
                                         category,inputTag,"4",0,imagesList));
                             }
                             if (!newArrivalList.isEmpty()){
-                                newArrivalRecycler.setAdapter(new ProductDetailsForFragmentAdapter(newArrivalList,HomePageFragment.this));
+                                if (changingWishListIcon()) {
+                                    newArrivalRecycler.setAdapter(new ProductDetailsForFragmentAdapter(newArrivalList, HomePageFragment.this));
+                                }
                             }
                         } catch (JSONException e) {
                             throw new RuntimeException(e);
@@ -444,5 +482,19 @@ public class HomePageFragment extends Fragment {
                 }
             }
         }).start();
+    }
+    private boolean changingWishListIcon() {
+        ArrayList<ProductDetailsModel> wishlistItem = new ArrayList<>();
+        wishlistItem = sessionManager.getWishList();
+        Log.e("wishlist",wishlistItem.toString());
+        for (int i = 0; i < newArrivalList.size(); i++) {
+            for (int j = 0; j < wishlistItem.size(); j++) {
+                if (newArrivalList.get(i).getProductId().equals(wishlistItem.get(j).getProductId())) {
+                    newArrivalList.get(i).setWishListImgToggle(1);
+                    Log.e("changing","true");
+                }
+            }
+        }
+        return true;
     }
 }

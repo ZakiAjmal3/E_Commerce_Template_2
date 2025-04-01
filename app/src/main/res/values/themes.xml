@@ -5,7 +5,10 @@
         <item name="android:statusBarColor">@color/black</item>
         <item name="colorPrimary">@color/black</item>
         <item name="colorOnPrimary">@color/white</item>
+
+        <item name="bottomNavigationStyle">@style/Widget.Material3.BottomNavigationView</item>
     </style>
+
     <style name="DialogAnimationDisplayLeft">
         <item name="android:windowEnterAnimation">@anim/lefttorightdisplayleft</item>
         <item name="android:windowExitAnimation">@anim/righttoleftdisplayleft</item>

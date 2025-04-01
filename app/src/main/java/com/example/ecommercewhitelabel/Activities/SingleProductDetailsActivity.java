@@ -24,6 +24,7 @@ import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.cardview.widget.CardView;
 import androidx.core.content.ContextCompat;
@@ -31,6 +32,7 @@ import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 import androidx.core.widget.NestedScrollView;
+import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.viewpager2.widget.ViewPager2;
@@ -71,8 +73,7 @@ public class SingleProductDetailsActivity extends AppCompatActivity {
     ArrayList<ProductDetailsModel> thisSingleProductItem;
     ArrayList<HomePageBrowseByDStyleModel> browseByDressList;
     String productTitleStr,productRatingStr,productPriceStr;
-    TextView productTitleTxt,productRatingTxt,productPriceTxt,quantityTxt,smallTxt,mediumTxt,largeTxt,xLargeTxt;
-    WebView descriptionWebView;
+    TextView productTitleTxt,productPriceTxt,quantityTxt,smallTxt,mediumTxt,largeTxt,xLargeTxt;
     CustomRatingBar ratingBar;
     int quantityInt = 1;
     CardView colorCard1,colorCard2,colorCard3;
@@ -124,7 +125,7 @@ public class SingleProductDetailsActivity extends AppCompatActivity {
         productIdIntent = getIntent().getStringExtra("productId");
 
         // Suggestion RV setup
-        suggestionProductRV.setLayoutManager(new LinearLayoutManager(this,LinearLayoutManager.HORIZONTAL,false));
+        suggestionProductRV.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
         newArrivalList = new ArrayList<>();
         thisSingleProductItem = new ArrayList<>();
         getProductById();
@@ -151,13 +152,10 @@ public class SingleProductDetailsActivity extends AppCompatActivity {
         productImgMain = findViewById(R.id.productImgMain);
         productTitleTxt = findViewById(R.id.productTitleTxt);
 //        productTitleTxt.setText(productTitleStr);
-        productRatingTxt = findViewById(R.id.ratingBarTxt);
-//        productRatingTxt.setText(productRatingStr);
 
         productPriceTxt = findViewById(R.id.productPriceTxt);
 //        productPriceTxt.setText("₹ " + productPriceStr);
 
-        descriptionWebView = findViewById(R.id.productDescriptionTxt);
 
         ratingBar = findViewById(R.id.ratingBar);
 //        ratingBar.setRating(Float.parseFloat(productRatingStr));
@@ -185,7 +183,33 @@ public class SingleProductDetailsActivity extends AppCompatActivity {
         addToCartBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                addToCart();
+                if (!sessionManager.isLoggedIn()){
+                    AlertDialog.Builder builder = new AlertDialog.Builder(SingleProductDetailsActivity.this);
+                    AlertDialog dialog = builder.setTitle("Add to Cart")
+                            .setMessage("Do you want to add this item to your cart?")
+                            .setPositiveButton("Yes", (dialog1, which) -> addToCart()) // Call addToCart() on "Yes"
+                            .setNegativeButton("Cancel", (dialog1, which) ->
+                                    dialog1.dismiss()) // Close dialog on "Cancel"
+                            .create();
+
+                    // Show the dialog before applying custom styles
+                    dialog.show();
+
+                    // Change background color
+                    dialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.WHITE)); // Yellow background
+
+                    // Change text color of Title & Message
+                    TextView textView = dialog.findViewById(android.R.id.message);
+                    if (textView != null) {
+                        textView.setTextColor(Color.BLACK); // Change message text color
+                    }
+
+                    // Change button text colors
+                    dialog.getButton(AlertDialog.BUTTON_POSITIVE).setTextColor(Color.BLUE);
+                    dialog.getButton(AlertDialog.BUTTON_NEGATIVE).setTextColor(Color.RED);
+                }else {
+                    addToCart();
+                }
             }
         });
 
@@ -319,6 +343,7 @@ public class SingleProductDetailsActivity extends AppCompatActivity {
                     public void onResponse(JSONObject response) {
                         String message = response.optString("message", null);
                         Toast.makeText(SingleProductDetailsActivity.this, message, Toast.LENGTH_SHORT).show();
+                        sessionManager.getCartFromServer();
                     }
                 },
                 new Response.ErrorListener() {
@@ -452,31 +477,30 @@ public class SingleProductDetailsActivity extends AppCompatActivity {
         productTitleTxt.setEllipsize(TextUtils.TruncateAt.END);
         productTitleTxt.setMaxLines(2);
 
-        productRatingTxt.setText(productRatingStr);
-
         Glide.with(this).load(thisSingleProductItem.get(0).getProductImagesModelsArrList().get(0).getProductImage()).error(R.drawable.no_image).into(productImgMain);
+        if (!thisSingleProductItem.get(0).getDiscountAmount().equals("0")) {
+            String originalPrice, disPercent, sellingPrice;
+            originalPrice = thisSingleProductItem.get(0).getProductMRP();
+            disPercent = thisSingleProductItem.get(0).getDiscountPercentage();
+            sellingPrice = thisSingleProductItem.get(0).getProductPrice();
 
-        String originalPrice,disPercent,sellingPrice;
-        originalPrice = thisSingleProductItem.get(0).getProductMRP();
-        disPercent = thisSingleProductItem.get(0).getDiscountPercentage();
-        sellingPrice = thisSingleProductItem.get(0).getProductPrice();
+            // Create a SpannableString for the original price with strikethrough
+            SpannableString spannableOriginalPrice = new SpannableString("₹" + originalPrice);
+            spannableOriginalPrice.setSpan(new StrikethroughSpan(), 0, spannableOriginalPrice.length(), 0);
+            // Create the discount text
+            String discountText = "(-" + disPercent + "%)";
+            spannableText = new SpannableStringBuilder();
+            spannableText.append("₹" + sellingPrice + " ");
+            spannableText.append(spannableOriginalPrice);
+            spannableText.append(" " + discountText);
+            // Set the color for the discount percentage
+            int startIndex = spannableText.length() - discountText.length();
+            spannableText.setSpan(new ForegroundColorSpan(Color.GREEN), startIndex, spannableText.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
 
-        // Create a SpannableString for the original price with strikethrough
-        SpannableString spannableOriginalPrice = new SpannableString("₹" + originalPrice);
-        spannableOriginalPrice.setSpan(new StrikethroughSpan(), 0, spannableOriginalPrice.length(), 0);
-        // Create the discount text
-        String discountText = "(-" + disPercent + "%)";
-        spannableText = new SpannableStringBuilder();
-        spannableText.append("₹" + sellingPrice + " ");
-        spannableText.append(spannableOriginalPrice);
-        spannableText.append(" " + discountText);
-        // Set the color for the discount percentage
-        int startIndex = spannableText.length() - discountText.length();
-        spannableText.setSpan(new ForegroundColorSpan(Color.GREEN), startIndex, spannableText.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
-
-        productPriceTxt.setText(spannableText);
-        String description = thisSingleProductItem.get(0).getDescription();
-        descriptionWebView.loadData(description, "text/html", "UTF-8");
+            productPriceTxt.setText(spannableText);
+        }else {
+            productPriceTxt.setText("₹ " + thisSingleProductItem.get(0).getProductPrice());
+        }
 
         ArrayList<String> images = new ArrayList<>();
         for (int i = 0; i < thisSingleProductItem.get(0).getProductImagesModelsArrList().size(); i++) {
@@ -583,5 +607,11 @@ public class SingleProductDetailsActivity extends AppCompatActivity {
             }
         };
         MySingleton.getInstance(this).addToRequestQueue(jsonObjectRequest);
+    }
+    public String getProductIdFromSingleProPage(){
+        return productIdIntent;
+    }
+    public String getDescription(){
+        return thisSingleProductItem.get(0).getDescription();
     }
 }

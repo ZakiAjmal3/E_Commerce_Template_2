@@ -4,6 +4,7 @@ import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
+import android.os.Handler;
 import android.text.Spannable;
 import android.text.SpannableString;
 import android.text.SpannableStringBuilder;
@@ -28,6 +29,9 @@ import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.bumptech.glide.Glide;
+import com.example.ecommercewhitelabel.Activities.HomePageActivity;
+import com.example.ecommercewhitelabel.Activities.MainActivity;
+import com.example.ecommercewhitelabel.Activities.MensCasualClothesActivity;
 import com.example.ecommercewhitelabel.Activities.MyOrdersActivity;
 import com.example.ecommercewhitelabel.Activities.SingleProductDetailsActivity;
 import com.example.ecommercewhitelabel.Model.MyOrderModel;
@@ -56,21 +60,21 @@ public class CasualMensClothsForActivityAdapter extends RecyclerView.Adapter<Cas
     public CasualMensClothsForActivityAdapter(ArrayList<ProductDetailsModel> productDetailsList, Context context) {
         this.productDetailsList = productDetailsList;
         this.context = context;
-        this.sessionManager = new SessionManager(context);
-        authToken = sessionManager.getUserData().get("authToken");
     }
     @NonNull
     @Override
     public CasualMensClothsForActivityAdapter.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View view = null;
-        view = LayoutInflater.from(parent.getContext()).inflate(R.layout.dress_item_layout_for_all,parent,false);
+        view = LayoutInflater.from(parent.getContext()).inflate(R.layout.mens_casual_recycler_item_layout,parent,false);
+        this.sessionManager = new SessionManager(context);
+        authToken = sessionManager.getUserData().get("authToken");
         return new ViewHolder(view);
     }
     @Override
     public void onBindViewHolder(@NonNull CasualMensClothsForActivityAdapter.ViewHolder holder, @SuppressLint("RecyclerView") int position) {
         holder.productName.setText(productDetailsList.get(position).getProductTitle());
         holder.productName.setEllipsize(TextUtils.TruncateAt.END);
-        holder.productName.setMaxLines(2);
+        holder.productName.setMaxLines(1);
 
         holder.productRating.setText(productDetailsList.get(position).getProductRating() + "/5");
 //        holder.imageView.setImageResource(productDetailsList.get(position).getProductImage());
@@ -83,38 +87,41 @@ public class CasualMensClothsForActivityAdapter extends RecyclerView.Adapter<Cas
         }
         holder.ratingBar.setRating(Float.parseFloat(productDetailsList.get(position).getProductRating()));
 
-        String originalPrice,disPercent,sellingPrice;
-        originalPrice = productDetailsList.get(position).getProductMRP();
-        disPercent = productDetailsList.get(position).getDiscountPercentage();
-        sellingPrice = productDetailsList.get(position).getProductPrice();
+        if (!productDetailsList.get(position).getDiscountAmount().equals("0")) {
+            String originalPrice, disPercent, sellingPrice;
+            originalPrice = productDetailsList.get(position).getProductMRP();
+            disPercent = productDetailsList.get(position).getDiscountPercentage();
+            sellingPrice = productDetailsList.get(position).getProductPrice();
 
-        // Create a SpannableString for the original price with strikethrough
-        SpannableString spannableOriginalPrice = new SpannableString("₹" + originalPrice);
-        spannableOriginalPrice.setSpan(new StrikethroughSpan(), 0, spannableOriginalPrice.length(), 0);
-        // Create the discount text
-        String discountText = "(-" + disPercent + "%)";
-        spannableText = new SpannableStringBuilder();
-        spannableText.append("₹" + sellingPrice + " ");
-        spannableText.append(spannableOriginalPrice);
-        spannableText.append(" " + discountText);
-        // Set the color for the discount percentage
-        int startIndex = spannableText.length() - discountText.length();
-        spannableText.setSpan(new ForegroundColorSpan(Color.GREEN), startIndex, spannableText.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+            // Create a SpannableString for the original price with strikethrough
+            SpannableString spannableOriginalPrice = new SpannableString("₹" + originalPrice);
+            spannableOriginalPrice.setSpan(new StrikethroughSpan(), 0, spannableOriginalPrice.length(), 0);
+            // Create the discount text
+            String discountText = "(-" + disPercent + "%)";
+            spannableText = new SpannableStringBuilder();
+            spannableText.append("₹" + sellingPrice + " ");
+            spannableText.append(spannableOriginalPrice);
+            spannableText.append(" " + discountText);
+            // Set the color for the discount percentage
+            int startIndex = spannableText.length() - discountText.length();
+            spannableText.setSpan(new ForegroundColorSpan(Color.GREEN), startIndex, spannableText.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
 
-        holder.productPrice.setText(spannableText);
+            holder.productPrice.setText(spannableText);
+        }else {
+            holder.productPrice.setText("₹" + productDetailsList.get(position).getProductPrice());
+        }
 
-        holder.buyBtn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent intent = new Intent(context, SingleProductDetailsActivity.class);
-                intent.putExtra("productId",productDetailsList.get(position).getProductId());
-                context.startActivity(intent);
-            }
-        });
+        int wishlistState = productDetailsList.get(position).getWishListImgToggle();
+        if (wishlistState == 1){
+            holder.wishlistImg.setImageResource(R.drawable.ic_heart_red);
+        }else {
+            holder.wishlistImg.setImageResource(R.drawable.ic_heart_grey);
+        }
 
         holder.wishlistImg.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                setWishlistCount();
                 int state;
                 state = productDetailsList.get(position).getWishListImgToggle();
                 if (state == 0) {
@@ -128,9 +135,22 @@ public class CasualMensClothsForActivityAdapter extends RecyclerView.Adapter<Cas
                 }
             }
         });
-
+        if (context instanceof SingleProductDetailsActivity){
+            RecyclerView.LayoutParams layoutParams = (RecyclerView.LayoutParams) holder.itemView.getLayoutParams();
+            int screenWidth = holder.itemView.getContext().getResources().getDisplayMetrics().widthPixels;
+            layoutParams.width = (int) (screenWidth / 2.2); // Divide screen width by 2 for two items
+            holder.itemView.setLayoutParams(layoutParams);
+        }
     }
 
+    private void setWishlistCount() {
+        new Handler().postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                ((HomePageActivity) context).setWishlistCount();
+            }
+        }, 1500);  // Match the duration of the logo animation
+    }
     private void removeFromWishList(int position) {
         String orderURL = Constant.BASE_URL + "wishlist/remove/" + productDetailsList.get(position).getProductId();
         JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.POST, orderURL, null,
@@ -138,6 +158,8 @@ public class CasualMensClothsForActivityAdapter extends RecyclerView.Adapter<Cas
                     @Override
                     public void onResponse(JSONObject response) {
                         Toast.makeText(context, "Item removed from wishlist", Toast.LENGTH_SHORT).show();
+                        sessionManager.removeWishListItem(productDetailsList.get(position).getProductId());
+                        sessionManager.getWishlistFromServer();
                     }
                 },
                 new Response.ErrorListener() {
@@ -188,6 +210,7 @@ public class CasualMensClothsForActivityAdapter extends RecyclerView.Adapter<Cas
                     @Override
                     public void onResponse(JSONObject response) {
                         Toast.makeText(context, "Item added to wishlist", Toast.LENGTH_SHORT).show();
+                        sessionManager.getWishlistFromServer();
                     }
                 },
                 new Response.ErrorListener() {
@@ -219,7 +242,6 @@ public class CasualMensClothsForActivityAdapter extends RecyclerView.Adapter<Cas
         };
         MySingleton.getInstance(context).addToRequestQueue(jsonObjectRequest);
     }
-
     @Override
     public int getItemCount() {
         return productDetailsList.size();
@@ -228,7 +250,7 @@ public class CasualMensClothsForActivityAdapter extends RecyclerView.Adapter<Cas
         TextView productName,productPrice,productRating;
         ImageView productImg,wishlistImg;
         CustomRatingBar ratingBar;
-        Button buyBtn;
+
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
             productName = itemView.findViewById(R.id.productNameTxt);
@@ -237,7 +259,6 @@ public class CasualMensClothsForActivityAdapter extends RecyclerView.Adapter<Cas
             productImg = itemView.findViewById(R.id.productImg);
             wishlistImg = itemView.findViewById(R.id.wishlistImg);
             ratingBar = itemView.findViewById(R.id.ratingBar);
-            buyBtn = itemView.findViewById(R.id.buy);
 
             itemView.setOnClickListener(new View.OnClickListener() {
                 @Override

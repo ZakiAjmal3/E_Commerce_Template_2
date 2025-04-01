@@ -176,9 +176,10 @@ public class LoginActivity extends AppCompatActivity {
                     public void onResponse(JSONObject response) {
                         try {
                             authToken = response.getString("token");
-                            sessionManager.saveAuthToken(userId,authToken);
                             JSONObject jsonObject = response.getJSONObject("user");
                             userId = jsonObject.getString("id");
+                            sessionManager.saveAuthToken(userId,authToken);
+                            Log.e("userid",userId);
                             String fullName = jsonObject.getString("name");
                             String email = jsonObject.getString("email");
                             String role = jsonObject.getString("role");

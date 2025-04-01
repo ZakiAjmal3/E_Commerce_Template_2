@@ -227,7 +227,9 @@
             android:layout_height="wrap_content"
             android:layout_below="@id/brandLogoRL"
             android:background="@color/white"
-            android:padding="20dp">
+            android:paddingTop="20dp"
+            android:paddingLeft="20dp"
+            android:paddingBottom="20dp">
             <TextView
                 android:id="@+id/newArrivalTxt"
                 android:layout_width="wrap_content"
@@ -236,23 +238,40 @@
                 android:text="NEW ARRIVALS"
                 android:textColor="@color/black"
                 android:textSize="25sp"
-                android:textStyle="bold"/>
-            <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/newArrivalRecyclerView"
+                android:textStyle="bold"
+                android:paddingRight="20dp"/>
+            <RelativeLayout
+                android:id="@+id/newArrivalRL2"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_below="@id/newArrivalTxt"/>
+                android:layout_below="@id/newArrivalTxt">
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/newArrivalRecyclerView"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:paddingRight="15dp"
+                    android:layout_marginRight="5dp"/>
+                <ImageView
+                    android:id="@+id/rightIndicatorNewArrival"
+                    android:layout_width="20dp"
+                    android:layout_height="20dp"
+                    android:src="@drawable/ic_right_arrow"
+                    android:background="?attr/selectableItemBackground"
+                    android:layout_alignParentEnd="true"
+                    android:layout_centerVertical="true"/>
+            </RelativeLayout>
             <TextView
                 android:id="@+id/viewAllTxtBtn"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:background="@drawable/rounded_corner_box_bg"
-                android:layout_below="@id/newArrivalRecyclerView"
+                android:layout_below="@id/newArrivalRL2"
                 android:text="View All"
                 android:textAlignment="center"
                 android:padding="10dp"
                 android:textColor="@color/black"
                 android:layout_marginTop="10dp"
+                android:paddingRight="20dp"
                 android:textSize="15sp"
                 android:foreground="?android:attr/selectableItemBackgroundBorderless"
                 android:textStyle="bold"/>
@@ -282,6 +301,8 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_below="@id/browseByDressTxt"
+                android:fadingEdge="horizontal"
+                android:fadingEdgeLength="50dp"
                 />
         </RelativeLayout>
         <RelativeLayout
@@ -290,7 +311,9 @@
             android:layout_height="wrap_content"
             android:layout_below="@id/browseByDressRL"
             android:background="@color/white"
-            android:padding="20dp">
+            android:paddingTop="20dp"
+            android:paddingLeft="20dp"
+            android:paddingBottom="20dp">
             <TextView
                 android:id="@+id/topSellingTxt"
                 android:layout_width="wrap_content"
@@ -299,23 +322,40 @@
                 android:text="TOP SELLINGS"
                 android:textColor="@color/black"
                 android:textSize="25sp"
-                android:textStyle="bold"/>
+                android:textStyle="bold"
+                android:paddingRight="20dp"/>
+            <RelativeLayout
+                android:id="@+id/topSellerRL"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/topSellingTxt">
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/topSellingRecyclerView"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_below="@id/topSellingTxt"/>
+                android:paddingRight="15dp"
+                android:layout_marginRight="5dp"/>
+            <ImageView
+                android:id="@+id/rightIndicatorTopSelling"
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:src="@drawable/ic_right_arrow"
+                android:background="?attr/selectableItemBackground"
+                android:layout_alignParentEnd="true"
+                android:layout_centerVertical="true"/>
+            </RelativeLayout>
             <TextView
                 android:id="@+id/topSellingViewAllTxtBtn"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:background="@drawable/rounded_corner_box_bg"
-                android:layout_below="@id/topSellingRecyclerView"
+                android:layout_below="@id/topSellerRL"
                 android:text="View All"
                 android:textAlignment="center"
                 android:padding="10dp"
                 android:textColor="@color/black"
                 android:layout_marginTop="10dp"
+                android:paddingRight="20dp"
                 android:textSize="15sp"
                 android:textStyle="bold"
                 android:foreground="?android:attr/selectableItemBackgroundBorderless"

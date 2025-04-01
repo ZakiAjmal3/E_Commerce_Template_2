@@ -7,8 +7,8 @@
     <androidx.cardview.widget.CardView
         android:id="@+id/productImgCardView"
         android:layout_width="match_parent"
-        android:layout_height="250dp"
-        app:cardCornerRadius="20dp"
+        android:layout_height="150dp"
+        app:cardCornerRadius="10dp"
         app:cardBackgroundColor="@color/light_grey2">
         <RelativeLayout
             android:layout_width="match_parent"
@@ -39,7 +39,7 @@
         android:layout_below="@id/productImgCardView"
         android:layout_marginTop="10dp"
         android:layout_marginBottom="5dp"
-        android:textSize="20sp"/>
+        android:textSize="18sp"/>
     <com.example.ecommercewhitelabel.Utils.CustomRatingBar
         android:id="@+id/ratingBar"
         android:layout_width="wrap_content"
@@ -52,7 +52,8 @@
         android:text="3.5/5"
         android:textColor="@color/black"
         android:layout_below="@id/productNameTxt"
-        android:layout_toRightOf="@id/ratingBar"/>
+        android:layout_toRightOf="@id/ratingBar"
+        android:visibility="gone"/>
     <TextView
         android:id="@+id/productPriceTxt"
         android:layout_width="wrap_content"
@@ -62,17 +63,6 @@
         android:textSize="16dp"
         android:textStyle="bold"
         android:textColor="@color/black"
-        android:layout_below="@id/ratingTxt" />
-    <Button
-        android:id="@+id/buy"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Buy"
-        android:textColor="@color/white"
-        android:backgroundTint="@color/black"
-        android:layout_below="@id/ratingBar"
-        android:layout_alignParentEnd="true"
-        android:visibility="visible"
-        android:layout_marginRight="10dp"/>
+        android:layout_below="@id/ratingBar" />
 
 </RelativeLayout>

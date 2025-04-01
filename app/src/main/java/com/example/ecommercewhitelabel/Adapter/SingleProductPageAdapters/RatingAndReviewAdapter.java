@@ -13,7 +13,11 @@ import com.example.ecommercewhitelabel.Model.RatingAndReviewModel;
 import com.example.ecommercewhitelabel.R;
 import com.example.ecommercewhitelabel.Utils.CustomRatingBar;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
+import java.util.Locale;
 
 public class RatingAndReviewAdapter extends RecyclerView.Adapter<RatingAndReviewAdapter.ViewHolder> {
     ArrayList<RatingAndReviewModel> productDetailsList;
@@ -37,7 +41,21 @@ public class RatingAndReviewAdapter extends RecyclerView.Adapter<RatingAndReview
         holder.ratingBar.setRating(Float.parseFloat(productDetailsList.get(position).getRating()));
         holder.reviewerNameTxt.setText(productDetailsList.get(position).getReviewerName());
         holder.reviewContentTxt.setText(productDetailsList.get(position).getReviewContent());
-        holder.reviewDateTxt.setText(productDetailsList.get(position).getReviewDate());
+
+        String orderDate = productDetailsList.get(position).getReviewDate();
+        String formattedDate = null;
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.ENGLISH);
+        simpleDateFormat.setTimeZone(java.util.TimeZone.getTimeZone("UTC"));
+        SimpleDateFormat outputFormat = new SimpleDateFormat("MMMM dd, yyyy", Locale.ENGLISH);
+        try {
+            Date date = simpleDateFormat.parse(orderDate); // Parse timestamp
+            formattedDate = outputFormat.format(date); // Convert to required format
+            System.out.println(formattedDate); // Output: March 27, 2025
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+
+        holder.reviewDateTxt.setText(formattedDate);
 
     }
 

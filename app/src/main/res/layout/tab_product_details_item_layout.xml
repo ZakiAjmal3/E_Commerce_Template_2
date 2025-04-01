@@ -1,0 +1,175 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/white">
+
+    <TextView
+        android:id="@+id/productSpecificationsTxt"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Product specifications"
+        android:textColor="@color/black"
+        android:textSize="25sp"
+        android:textStyle="bold"
+        android:layout_marginLeft="15dp"
+        android:fontFamily="sans-serif-black"/>
+    <WebView
+        android:id="@+id/productDescriptionTxt"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/productSpecificationsTxt"
+        android:layout_marginLeft="15dp"
+        android:layout_marginTop="20dp"
+        android:layout_marginRight="15dp"
+        android:text="@string/product_description"
+        android:textSize="15sp" />
+<!--    <LinearLayout-->
+<!--        android:id="@+id/materialCompositionLL"-->
+<!--        android:layout_width="match_parent"-->
+<!--        android:layout_height="wrap_content"-->
+<!--        android:layout_below="@id/productSpecificationsTxt"-->
+<!--        android:weightSum="2">-->
+<!--        <TextView-->
+<!--            android:id="@+id/materialCompositionTxt"-->
+<!--            android:layout_width="0dp"-->
+<!--            android:layout_height="wrap_content"-->
+<!--            android:text="Material Composition"-->
+<!--            android:layout_gravity="center"-->
+<!--            android:layout_weight="0.7"-->
+<!--            android:textSize="16sp"-->
+<!--            android:layout_margin="15dp" />-->
+<!--        <RelativeLayout-->
+<!--            android:layout_width="0dp"-->
+<!--            android:layout_height="wrap_content"-->
+<!--            android:layout_weight="1.3">-->
+<!--            <TextView-->
+<!--                android:id="@+id/materialComDisplayTxt"-->
+<!--                android:layout_width="wrap_content"-->
+<!--                android:layout_height="wrap_content"-->
+<!--                android:text="100% Cotton"-->
+<!--                android:layout_centerVertical="true"-->
+<!--                android:textSize="16sp"-->
+<!--                android:textColor="@color/black"-->
+<!--                android:textStyle="bold"-->
+<!--                android:layout_margin="15dp" />-->
+<!--            <View-->
+<!--                android:layout_width="wrap_content"-->
+<!--                android:layout_height="1dp"-->
+<!--                android:layout_marginTop="10dp"-->
+<!--                android:background="@color/light_dark_grey"-->
+<!--                android:layout_below="@id/materialComDisplayTxt"/>-->
+<!--        </RelativeLayout>-->
+<!--    </LinearLayout>-->
+<!--    <LinearLayout-->
+<!--        android:id="@+id/careInstructionLL"-->
+<!--        android:layout_width="match_parent"-->
+<!--        android:layout_height="wrap_content"-->
+<!--        android:layout_below="@id/materialCompositionLL"-->
+<!--        android:weightSum="2">-->
+<!--        <TextView-->
+<!--            android:id="@+id/careInstructionTxt"-->
+<!--            android:layout_width="0dp"-->
+<!--            android:layout_height="wrap_content"-->
+<!--            android:layout_gravity="center"-->
+<!--            android:text="Care Instruction"-->
+<!--            android:layout_weight="0.7"-->
+<!--            android:textSize="16sp"-->
+<!--            android:layout_margin="15dp" />-->
+<!--        <RelativeLayout-->
+<!--            android:layout_width="0dp"-->
+<!--            android:layout_height="wrap_content"-->
+<!--            android:layout_weight="1.3">-->
+<!--            <TextView-->
+<!--                android:id="@+id/careInstructionDisplayTxt"-->
+<!--                android:layout_width="wrap_content"-->
+<!--                android:layout_height="wrap_content"-->
+<!--                android:text="Machine Wash warm, tumble dry"-->
+<!--                android:textColor="@color/black"-->
+<!--                android:layout_centerVertical="true"-->
+<!--                android:textStyle="bold"-->
+<!--                android:textSize="16sp"-->
+<!--                android:layout_margin="15dp" />-->
+<!--            <View-->
+<!--                android:layout_width="wrap_content"-->
+<!--                android:layout_height="1dp"-->
+<!--                android:layout_marginTop="10dp"-->
+<!--                android:background="@color/light_dark_grey"-->
+<!--                android:layout_below="@id/careInstructionDisplayTxt"/>-->
+<!--        </RelativeLayout>-->
+<!--    </LinearLayout>-->
+<!--    <LinearLayout-->
+<!--        android:id="@+id/fitTypeLL"-->
+<!--        android:layout_width="match_parent"-->
+<!--        android:layout_height="wrap_content"-->
+<!--        android:layout_below="@id/careInstructionLL"-->
+<!--        android:weightSum="2">-->
+<!--        <TextView-->
+<!--            android:id="@+id/fitTypeTxt"-->
+<!--            android:layout_width="0dp"-->
+<!--            android:layout_height="wrap_content"-->
+<!--            android:text="Fit Type"-->
+<!--            android:layout_gravity="center"-->
+<!--            android:layout_weight="0.7"-->
+<!--            android:textSize="16sp"-->
+<!--            android:layout_margin="15dp" />-->
+<!--        <RelativeLayout-->
+<!--            android:layout_width="0dp"-->
+<!--            android:layout_height="wrap_content"-->
+<!--            android:layout_weight="1.3">-->
+<!--            <TextView-->
+<!--                android:id="@+id/fitTypeDisplayTxt"-->
+<!--                android:layout_width="wrap_content"-->
+<!--                android:layout_height="wrap_content"-->
+<!--                android:text="Classic Fit"-->
+<!--                android:layout_centerVertical="true"-->
+<!--                android:textColor="@color/black"-->
+<!--                android:textStyle="bold"-->
+<!--                android:textSize="16sp"-->
+<!--                android:layout_margin="15dp" />-->
+<!--            <View-->
+<!--                android:layout_width="wrap_content"-->
+<!--                android:layout_height="1dp"-->
+<!--                android:layout_marginTop="10dp"-->
+<!--                android:background="@color/light_dark_grey"-->
+<!--                android:layout_below="@id/fitTypeDisplayTxt"/>-->
+<!--        </RelativeLayout>-->
+<!--    </LinearLayout>-->
+<!--    <LinearLayout-->
+<!--        android:id="@+id/patternLL"-->
+<!--        android:layout_width="match_parent"-->
+<!--        android:layout_height="wrap_content"-->
+<!--        android:layout_below="@id/fitTypeLL"-->
+<!--        android:weightSum="2">-->
+<!--        <TextView-->
+<!--            android:id="@+id/patternTxt"-->
+<!--            android:layout_width="0dp"-->
+<!--            android:layout_height="wrap_content"-->
+<!--            android:text="Pattern"-->
+<!--            android:layout_gravity="center"-->
+<!--            android:layout_weight="0.7"-->
+<!--            android:textSize="16sp"-->
+<!--            android:layout_margin="15dp" />-->
+<!--        <RelativeLayout-->
+<!--            android:layout_width="0dp"-->
+<!--            android:layout_height="wrap_content"-->
+<!--            android:layout_weight="1.3">-->
+<!--            <TextView-->
+<!--                android:id="@+id/patternDisplayTxt"-->
+<!--                android:layout_width="wrap_content"-->
+<!--                android:layout_height="wrap_content"-->
+<!--                android:layout_centerVertical="true"-->
+<!--                android:text="Solid"-->
+<!--                android:textColor="@color/black"-->
+<!--                android:textStyle="bold"-->
+<!--                android:textSize="16sp"-->
+<!--                android:layout_margin="15dp" />-->
+<!--            <View-->
+<!--                android:layout_width="wrap_content"-->
+<!--                android:layout_height="1dp"-->
+<!--                android:layout_marginTop="10dp"-->
+<!--                android:background="@color/light_dark_grey"-->
+<!--                android:layout_below="@id/patternDisplayTxt"/>-->
+<!--        </RelativeLayout>-->
+<!--    </LinearLayout>-->
+</RelativeLayout>

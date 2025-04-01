@@ -17,9 +17,11 @@ import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
 import com.example.ecommercewhitelabel.R;
+import com.example.ecommercewhitelabel.Utils.SessionManager;
 
 public class MainActivity extends AppCompatActivity {
     ImageView logo;
+    SessionManager sessionManager;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -35,11 +37,17 @@ public class MainActivity extends AppCompatActivity {
         }
         logo = findViewById(R.id.logo);
 
+        sessionManager = new SessionManager(MainActivity.this);
+        sessionManager.clearWishList();
+        sessionManager.clearCart();
+        sessionManager.getWishlistFromServer();
+        sessionManager.getCartFromServer();
+
         getWindow().setStatusBarColor(ContextCompat.getColor(MainActivity.this, R.color.white));
 //        getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR);
 
-        Animation logo_object = AnimationUtils.loadAnimation(getApplicationContext(), R.anim.main_activity_logo_rotation);
-        logo.startAnimation(logo_object);
+            Animation logo_object = AnimationUtils.loadAnimation(getApplicationContext(), R.anim.main_activity_logo_rotation);
+            logo.startAnimation(logo_object);
 
         new Handler().postDelayed(new Runnable() {
             @Override

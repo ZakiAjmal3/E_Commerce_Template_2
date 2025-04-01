@@ -4,6 +4,7 @@ import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
+import android.os.Handler;
 import android.text.Spannable;
 import android.text.SpannableString;
 import android.text.SpannableStringBuilder;
@@ -27,6 +28,7 @@ import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.bumptech.glide.Glide;
+import com.example.ecommercewhitelabel.Activities.HomePageActivity;
 import com.example.ecommercewhitelabel.Activities.OrderSingleViewActivity;
 import com.example.ecommercewhitelabel.Fragment.CartItemFragment;
 import com.example.ecommercewhitelabel.Model.CartItemModel;
@@ -83,27 +85,29 @@ public class CartItemAdapter extends RecyclerView.Adapter<CartItemAdapter.ViewHo
         }else {
             Glide.with(context).load(R.drawable.no_image);
         }
+        if (!productDetailsList.get(position).getDiscountAmount().equals("0")) {
+            String originalPrice, disPercent, sellingPrice;
+            originalPrice = productDetailsList.get(position).getProductMRP();
+            disPercent = productDetailsList.get(position).getDiscountPercentage();
+            sellingPrice = productDetailsList.get(position).getProductPrice();
 
-        String originalPrice,disPercent,sellingPrice;
-        originalPrice = productDetailsList.get(position).getProductMRP();
-        disPercent = productDetailsList.get(position).getDiscountPercentage();
-        sellingPrice = productDetailsList.get(position).getProductPrice();
+            // Create a SpannableString for the original price with strikethrough
+            SpannableString spannableOriginalPrice = new SpannableString("₹" + originalPrice);
+            spannableOriginalPrice.setSpan(new StrikethroughSpan(), 0, spannableOriginalPrice.length(), 0);
+            // Create the discount text
+            String discountText = "(-" + disPercent + "%)";
+            spannableText = new SpannableStringBuilder();
+            spannableText.append("₹" + sellingPrice + " ");
+            spannableText.append(spannableOriginalPrice);
+            spannableText.append(" " + discountText);
+            // Set the color for the discount percentage
+            int startIndex = spannableText.length() - discountText.length();
+            spannableText.setSpan(new ForegroundColorSpan(Color.GREEN), startIndex, spannableText.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
 
-        // Create a SpannableString for the original price with strikethrough
-        SpannableString spannableOriginalPrice = new SpannableString("₹" + originalPrice);
-        spannableOriginalPrice.setSpan(new StrikethroughSpan(), 0, spannableOriginalPrice.length(), 0);
-        // Create the discount text
-        String discountText = "(-" + disPercent + "%)";
-        spannableText = new SpannableStringBuilder();
-        spannableText.append("₹" + sellingPrice + " ");
-        spannableText.append(spannableOriginalPrice);
-        spannableText.append(" " + discountText);
-        // Set the color for the discount percentage
-        int startIndex = spannableText.length() - discountText.length();
-        spannableText.setSpan(new ForegroundColorSpan(Color.GREEN), startIndex, spannableText.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
-
-        holder.productPriceTxt.setText(spannableText);
-
+            holder.productPriceTxt.setText(spannableText);
+        }else {
+            holder.productPriceTxt.setText("₹" + productDetailsList.get(position).getProductPrice());
+        }
         holder.deleteBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -187,7 +191,15 @@ public class CartItemAdapter extends RecyclerView.Adapter<CartItemAdapter.ViewHo
         };
         MySingletonFragment.getInstance(context).addToRequestQueue(jsonObjectRequest);
     }
-
+    private void setCartCount() {
+        new Handler().postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                HomePageActivity activity = (HomePageActivity) context.getContext();
+                activity.setCartCount();
+            }
+        }, 1500);  // Match the duration of the logo animation
+    }
     private void deleteItem(int position) {
         String deleteURL = Constant.BASE_URL + "cart/remove/" + productDetailsList.get(position).getProductId();
         JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.POST, deleteURL, null,
@@ -195,10 +207,13 @@ public class CartItemAdapter extends RecyclerView.Adapter<CartItemAdapter.ViewHo
                     @Override
                     public void onResponse(JSONObject response) {
                         Toast.makeText(context.getContext(), "Item deleted successfully", Toast.LENGTH_SHORT).show();
+                        sessionManager.removeCartItem(productDetailsList.get(position));
                         productDetailsList.remove(position);
                         notifyDataSetChanged();
+                        sessionManager.getCartFromServer();
                         ((CartItemFragment) context).setOrderSummaryDetails();
                         ((CartItemFragment) context).checkCartItemArraySize();
+                        setCartCount();
                     }
                 },
                 new Response.ErrorListener() {

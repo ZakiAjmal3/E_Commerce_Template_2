@@ -18,6 +18,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
+import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.cardview.widget.CardView;
@@ -35,6 +36,7 @@ import com.example.ecommercewhitelabel.Fragment.SearchFragment;
 import com.example.ecommercewhitelabel.Fragment.WishListFragment;
 import com.example.ecommercewhitelabel.R;
 import com.example.ecommercewhitelabel.Utils.SessionManager;
+import com.google.android.material.badge.BadgeDrawable;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.navigation.NavigationBarView;
 
@@ -94,9 +96,17 @@ public class HomePageActivity extends AppCompatActivity {
                 }else if (item.getItemId() == R.id.search){
                     loadFragment(new SearchFragment());
                 }else if (item.getItemId() == R.id.wishlist){
-                    loadFragment(new WishListFragment());
+                    if (sessionManager.isLoggedIn()) {
+                        loadFragment(new WishListFragment());
+                    }else {
+                        startActivity(new Intent(HomePageActivity.this, LoginActivity.class));
+                    }
                 }else if (item.getItemId() == R.id.cart){
-                    loadFragment(new CartItemFragment());
+                    if (sessionManager.isLoggedIn()) {
+                        loadFragment(new CartItemFragment());
+                    }else {
+                        startActivity(new Intent(HomePageActivity.this, LoginActivity.class));
+                    }
                 }else if (item.getItemId() == R.id.profile){
                     if (sessionManager.isLoggedIn()) {
                         loadFragment(new ProfileFragment());
@@ -107,7 +117,22 @@ public class HomePageActivity extends AppCompatActivity {
                 return true;
             }
         });
-
+        // Handle back press using OnBackPressedDispatcher
+        getOnBackPressedDispatcher().addCallback(this, new OnBackPressedCallback(true) {
+            @Override
+            public void handleOnBackPressed() {
+                if (currentFragment instanceof HomePageFragment) {
+                    // If on HomeFragment, use the default behavior
+                    setEnabled(false); // Disable this callback
+                } else {
+                    // If on another fragment, navigate back to HomeFragment
+                    loadFragment(new HomePageFragment());
+                    bottomNavigationView.setSelectedItemId(R.id.home);
+                }
+            }
+        });
+        setWishlistCount();
+        setCartCount();
     }
     public void loadFragment(Fragment fragment) {
         getSupportFragmentManager()
@@ -275,13 +300,21 @@ public class HomePageActivity extends AppCompatActivity {
         ordersTxt.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                startActivity(new Intent(HomePageActivity.this,MyOrdersActivity.class));
+                if (sessionManager.isLoggedIn()) {
+                    startActivity(new Intent(HomePageActivity.this, MyOrdersActivity.class));
+                }else {
+                    startActivity(new Intent(HomePageActivity.this, LoginActivity.class));
+                }
             }
         });
         addressTxt.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                startActivity(new Intent(HomePageActivity.this,AddressShowingInputActivity.class));
+                if (sessionManager.isLoggedIn()) {
+                    startActivity(new Intent(HomePageActivity.this,AddressShowingInputActivity.class));
+                }else {
+                    startActivity(new Intent(HomePageActivity.this, LoginActivity.class));
+                }
             }
         });
 
@@ -297,5 +330,48 @@ public class HomePageActivity extends AppCompatActivity {
     }
     public static Fragment getCurrentFragment(){
         return currentFragment;
+    }
+
+    public void setWishlistCount(){
+        int count = sessionManager.getWishListCount();
+        BadgeDrawable badge = bottomNavigationView.getOrCreateBadge(R.id.wishlist);
+        if (count == 0){
+            badge.setVisible(false);
+        }else {
+            badge.setVisible(true);
+            badge.setNumber(count);
+            badge.setBackgroundColor(ContextCompat.getColor(HomePageActivity.this, R.color.red));
+            badge.setBadgeTextColor(ContextCompat.getColor(HomePageActivity.this, R.color.white));
+        }
+    }
+    public void setCartCount(){
+        int count = sessionManager.getCartCount();
+        BadgeDrawable badge = bottomNavigationView.getOrCreateBadge(R.id.cart);
+        if (count == 0){
+            badge.setVisible(false);
+        }else {
+            badge.setVisible(true);
+            badge.setNumber(count);
+            badge.setBackgroundColor(ContextCompat.getColor(HomePageActivity.this, R.color.red));
+            badge.setBadgeTextColor(ContextCompat.getColor(HomePageActivity.this, R.color.white));
+        }
+    }
+    @Override
+    protected void onResume() {
+        super.onResume();
+        setWishlistCount();
+        setCartCount();
+        Fragment fragment = getCurrentFragment();
+        if (fragment instanceof WishListFragment) {
+            bottomNavigationView.setSelectedItemId(R.id.wishlist);
+        }else if (fragment instanceof CartItemFragment){
+            bottomNavigationView.setSelectedItemId(R.id.cart);
+        }else if (fragment instanceof ProfileFragment){
+            bottomNavigationView.setSelectedItemId(R.id.profile);
+        }else if (fragment instanceof HomePageFragment){
+            bottomNavigationView.setSelectedItemId(R.id.home);
+        }else if (fragment instanceof SearchFragment){
+            bottomNavigationView.setSelectedItemId(R.id.search);
+        }
     }
 }

@@ -3,6 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:id="@+id/main"
     xmlns:tools="http://schemas.android.com/tools"
     android:background="@color/white">
 
@@ -11,11 +12,10 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="All Reviews "
-        android:layout_centerHorizontal="true"
+        android:layout_marginLeft="15dp"
         android:textColor="@color/black"
         android:textSize="25sp"
         android:textStyle="bold"
-        android:layout_marginTop="15dp"
         android:fontFamily="sans-serif-black"/>
     <TextView
         android:id="@+id/allReviewCountTxt"
@@ -25,22 +25,27 @@
         android:text="(451)"
         android:layout_centerHorizontal="true"
         android:textSize="25sp"
-        android:layout_marginTop="15dp"
+
         android:fontFamily="sans-serif-light"/>
-    <RelativeLayout
+    <LinearLayout
         android:id="@+id/writeReviewRL"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_below="@id/allReviewTxt"
+        android:orientation="horizontal"
+        android:weightSum="2"
         android:layout_marginTop="10dp"
+        android:layout_marginLeft="10dp"
+        android:layout_marginRight="10dp"
         android:padding="5dp"
         android:layout_centerHorizontal="true">
         <com.google.android.material.textfield.TextInputLayout
             android:id="@+id/statusAutoCompLayout"
             style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
             android:layout_height="40dp"
-            android:layout_centerVertical="true"
+            android:layout_weight="1"
+            android:layout_gravity="center"
             android:layout_marginLeft="5dp"
             android:layout_marginRight="5dp"
             app:endIconTint="@color/black"
@@ -54,13 +59,14 @@
                 android:layout_height="40dp"
                 android:padding="0dp"
                 android:inputType="none"
-                android:text="Select relevant filter"
+                android:text="Filter"
                 />
         </com.google.android.material.textfield.TextInputLayout>
         <Button
             android:id="@+id/writeReviewBtn"
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
             android:layout_height="45dp"
+            android:layout_weight="1"
             android:text="Write a Review"
             android:layout_toRightOf="@id/statusAutoCompLayout"
             android:backgroundTint="@color/black"
@@ -70,7 +76,7 @@
             android:layout_marginRight="5dp"
             android:textSize="15sp"
             android:layout_centerHorizontal="true"/>
-    </RelativeLayout>
+    </LinearLayout>
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/reviewRecyclerView"
         android:layout_width="match_parent"

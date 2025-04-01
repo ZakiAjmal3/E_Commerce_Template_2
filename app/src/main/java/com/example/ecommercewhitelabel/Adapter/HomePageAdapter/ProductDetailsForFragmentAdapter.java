@@ -3,6 +3,7 @@ package com.example.ecommercewhitelabel.Adapter.HomePageAdapter;
 import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.graphics.Color;
+import android.os.Handler;
 import android.text.Spannable;
 import android.text.SpannableString;
 import android.text.SpannableStringBuilder;
@@ -55,8 +56,6 @@ public class ProductDetailsForFragmentAdapter extends RecyclerView.Adapter<Produ
     public ProductDetailsForFragmentAdapter(ArrayList<ProductDetailsModel> productDetailsList, Fragment context) {
         this.productDetailsList = productDetailsList;
         this.context = context;
-        this.sessionManager = new SessionManager(context.getContext());
-        authToken = sessionManager.getUserData().get("authToken");
     }
 
     @NonNull
@@ -64,6 +63,8 @@ public class ProductDetailsForFragmentAdapter extends RecyclerView.Adapter<Produ
     public ProductDetailsForFragmentAdapter.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View view = null;
         view = LayoutInflater.from(parent.getContext()).inflate(R.layout.dress_item_layout_for_all,parent,false);
+        this.sessionManager = new SessionManager(context.getContext());
+        authToken = sessionManager.getUserData().get("authToken");
         return new ViewHolder(view);
     }
 
@@ -71,33 +72,36 @@ public class ProductDetailsForFragmentAdapter extends RecyclerView.Adapter<Produ
     public void onBindViewHolder(@NonNull ProductDetailsForFragmentAdapter.ViewHolder holder, @SuppressLint("RecyclerView") int position) {
         holder.productName.setText(productDetailsList.get(position).getProductTitle());
         holder.productName.setEllipsize(TextUtils.TruncateAt.END);
-        holder.productName.setMaxLines(2);
+        holder.productName.setMaxLines(1);
 
         holder.productRating.setText(productDetailsList.get(position).getProductRating() + "/5");
 
         Glide.with(context).load(productDetailsList.get(position).getProductImagesModelsArrList().get(0).getProductImage()).into(holder.productImg);
         holder.ratingBar.setRating(Float.parseFloat(productDetailsList.get(position).getProductRating()));
 
-        String originalPrice,disPercent,sellingPrice;
-        originalPrice = productDetailsList.get(position).getProductMRP();
-        disPercent = productDetailsList.get(position).getDiscountPercentage();
-        sellingPrice = productDetailsList.get(position).getProductPrice();
+        if (!productDetailsList.get(position).getDiscountAmount().equals("0")) {
+            String originalPrice, disPercent, sellingPrice;
+            originalPrice = productDetailsList.get(position).getProductMRP();
+            disPercent = productDetailsList.get(position).getDiscountPercentage();
+            sellingPrice = productDetailsList.get(position).getProductPrice();
 
-        // Create a SpannableString for the original price with strikethrough
-        SpannableString spannableOriginalPrice = new SpannableString("₹" + originalPrice);
-        spannableOriginalPrice.setSpan(new StrikethroughSpan(), 0, spannableOriginalPrice.length(), 0);
-        // Create the discount text
-        String discountText = "(-" + disPercent + "%)";
-        spannableText = new SpannableStringBuilder();
-        spannableText.append("₹" + sellingPrice + " ");
-        spannableText.append(spannableOriginalPrice);
-        spannableText.append(" " + discountText);
-        // Set the color for the discount percentage
-        int startIndex = spannableText.length() - discountText.length();
-        spannableText.setSpan(new ForegroundColorSpan(Color.GREEN), startIndex, spannableText.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+            // Create a SpannableString for the original price with strikethrough
+            SpannableString spannableOriginalPrice = new SpannableString("₹" + originalPrice);
+            spannableOriginalPrice.setSpan(new StrikethroughSpan(), 0, spannableOriginalPrice.length(), 0);
+            // Create the discount text
+            String discountText = "(-" + disPercent + "%)";
+            spannableText = new SpannableStringBuilder();
+            spannableText.append("₹" + sellingPrice + " ");
+            spannableText.append(spannableOriginalPrice);
+            spannableText.append(" " + discountText);
+            // Set the color for the discount percentage
+            int startIndex = spannableText.length() - discountText.length();
+            spannableText.setSpan(new ForegroundColorSpan(Color.GREEN), startIndex, spannableText.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
 
-        holder.productPrice.setText(spannableText);
-
+            holder.productPrice.setText(spannableText);
+        }else {
+            holder.productPrice.setText("₹" + productDetailsList.get(position).getProductPrice());
+        }
         holder.buyBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -107,9 +111,17 @@ public class ProductDetailsForFragmentAdapter extends RecyclerView.Adapter<Produ
             }
         });
 
+        int wishlistState = productDetailsList.get(position).getWishListImgToggle();
+        if (wishlistState == 1){
+            holder.wishlistImg.setImageResource(R.drawable.ic_heart_red);
+        }else {
+            holder.wishlistImg.setImageResource(R.drawable.ic_heart_grey);
+        }
+
         holder.wishlistImg.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                setWishlistCount();
                 int state;
                 state = productDetailsList.get(position).getWishListImgToggle();
                 if (state == 0) {
@@ -133,12 +145,22 @@ public class ProductDetailsForFragmentAdapter extends RecyclerView.Adapter<Produ
             holder.wishlistImg.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
+                    setWishlistCount();
                     removeFromWishList(position);
                 }
             });
 
         }
 
+    }
+    private void setWishlistCount() {
+        new Handler().postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                HomePageActivity activity = (HomePageActivity) context.getContext();
+                activity.setWishlistCount();
+            }
+        }, 1500);  // Match the duration of the logo animation
     }
     private void removeFromWishList(int position) {
         String orderURL = Constant.BASE_URL + "wishlist/remove/" + productDetailsList.get(position).getProductId();
@@ -147,9 +169,13 @@ public class ProductDetailsForFragmentAdapter extends RecyclerView.Adapter<Produ
                     @Override
                     public void onResponse(JSONObject response) {
                         Toast.makeText(context.getContext(), "Item removed from wishlist", Toast.LENGTH_SHORT).show();
-                        productDetailsList.remove(position);
+                        sessionManager.removeWishListItem(productDetailsList.get(position).getProductId());
+                        if (context instanceof WishListFragment){
+                            productDetailsList.remove(position);
+                            ((WishListFragment) context).checkWishListItemArraySize();
+                        }
+                        sessionManager.getWishlistFromServer();
                         notifyDataSetChanged();
-                        ((WishListFragment) context).checkWishListItemArraySize();
                     }
                 },
                 new Response.ErrorListener() {
@@ -193,12 +219,12 @@ public class ProductDetailsForFragmentAdapter extends RecyclerView.Adapter<Produ
         } catch (JSONException e) {
             e.printStackTrace();
         }
-
         JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.POST, orderURL, jsonObject,
                 new Response.Listener<JSONObject>() {
                     @Override
                     public void onResponse(JSONObject response) {
                         Toast.makeText(context.getContext(), "Item added to wishlist", Toast.LENGTH_SHORT).show();
+                        sessionManager.getWishlistFromServer();
                     }
                 },
                 new Response.ErrorListener() {

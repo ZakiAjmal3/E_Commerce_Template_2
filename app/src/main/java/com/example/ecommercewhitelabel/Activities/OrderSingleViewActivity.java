@@ -211,11 +211,12 @@ public class OrderSingleViewActivity extends AppCompatActivity {
                             for (int i = 0; i < productArray.length(); i++) {
                                 JSONObject productObj = productArray.getJSONObject(i);
                                 JSONObject productObj2 = productObj.getJSONObject("product");
+                                String productId = productObj2.getString("_id");
                                 String productTitle = productObj2.getString("title");
                                 String productPrice = productObj2.getString("price");
                                 JSONArray imageArray = productObj2.optJSONArray("images");
                                 String productImgUrl = imageArray.optString(0, null);
-                                sOrderItemsModelList.add(new SingleOrderPageItemsModel(productImgUrl,productTitle,productPrice));
+                                sOrderItemsModelList.add(new SingleOrderPageItemsModel(productId,productImgUrl,productTitle,productPrice));
                             }
                             shippingUserNameStr = firstName + " " + lastName;
                             shippingAddressLineStr1 = apartment + ", " + streetAddress + ", " + city;

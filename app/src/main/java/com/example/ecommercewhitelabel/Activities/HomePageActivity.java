@@ -66,11 +66,13 @@ public class HomePageActivity extends AppCompatActivity {
 
         sessionManager = new SessionManager(this);
         storeId = sessionManager.getStoreId();
-
         loadFragment(new HomePageFragment());
 
         imgMenu = findViewById(R.id.imgMenu);
         bottomNavigationView = findViewById(R.id.bottom_navigation);
+
+        setWishlistCount();
+        setCartCount();
 
         imgMenu.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -131,8 +133,6 @@ public class HomePageActivity extends AppCompatActivity {
                 }
             }
         });
-        setWishlistCount();
-        setCartCount();
     }
     public void loadFragment(Fragment fragment) {
         getSupportFragmentManager()

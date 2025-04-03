@@ -14,6 +14,7 @@ import android.view.Window;
 import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.RelativeLayout;
@@ -42,6 +43,7 @@ import com.example.ecommercewhitelabel.Fragment.CartItemFragment;
 import com.example.ecommercewhitelabel.Model.AddressItemModel;
 import com.example.ecommercewhitelabel.Model.CartItemModel;
 import com.example.ecommercewhitelabel.Model.CheckOutModel;
+import com.example.ecommercewhitelabel.Model.ProductImagesModel;
 import com.example.ecommercewhitelabel.R;
 import com.example.ecommercewhitelabel.Utils.Constant;
 import com.example.ecommercewhitelabel.Utils.MySingleton;
@@ -59,7 +61,9 @@ public class CheckOutOrderActivity extends AppCompatActivity {
     Button proceedToPayment;
     ImageView backBtn;
     RecyclerView checkoutRecyclerView;
-    TextView subTotalDisplayTxt, discountDisplayTxt, deliveryFeeDisplayTxt, totalAmountDisplayTxt,changeAddressTxtBtn;
+    TextView subTotalDisplayTxt, discountDisplayTxt, deliveryFeeDisplayTxt, totalAmountDisplayTxt,
+            changeAddressTxtBtn,promoCodeDiscountDisplayTxt;
+    LinearLayout promoCodeDiscountLL;
     TextView loginUserName,addressLine1Txt, addressLine2Txt, addressLine3Txt;
     ArrayList<CheckOutModel> checkOutModelArrayList;
     ArrayList<CartItemModel> cartItemModelArrayList;
@@ -72,6 +76,7 @@ public class CheckOutOrderActivity extends AppCompatActivity {
     RadioGroup radioGroup;
     RadioButton radio1, radio2;
     String paymentMethodStr = "",selectedAddressId = "";
+    String couponDiscountStr = "0";
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -104,6 +109,8 @@ public class CheckOutOrderActivity extends AppCompatActivity {
         discountDisplayTxt = findViewById(R.id.discountDisplayTxt);
         deliveryFeeDisplayTxt = findViewById(R.id.sizeTxt);
         totalAmountDisplayTxt = findViewById(R.id.totalAmountDisplayTxt);
+        promoCodeDiscountLL = findViewById(R.id.promoCodeDiscountLL);
+        promoCodeDiscountDisplayTxt = findViewById(R.id.promoCodeDiscountDisplayTxt);
 
         checkoutRecyclerView.setLayoutManager(new LinearLayoutManager(this));
         checkOutModelArrayList = new ArrayList<>();
@@ -124,12 +131,18 @@ public class CheckOutOrderActivity extends AppCompatActivity {
             String price = cartItemModelArrayList.get(i).getProductPrice();
             String discountAMT = cartItemModelArrayList.get(i).getDiscountAmount();
             String quantity = cartItemModelArrayList.get(i).getProductQuantity();
-            checkOutModelArrayList.add(new CheckOutModel(cartId,productId,name,price,mrp,discountAMT,quantity,null));
+            String imgURL = cartItemModelArrayList.get(i).getProductImagesModelsArrList().get(0).getProductImage();
+            checkOutModelArrayList.add(new CheckOutModel(cartId,productId,name,price,mrp,discountAMT,quantity,imgURL));
         }
-
         checkoutRecyclerView.setAdapter(new CheckOutAdapter(checkOutModelArrayList,this));
-        setOrderSummaryDetails();
 
+        couponDiscountStr = String.valueOf(getIntent().getIntExtra("couponDiscount",0));
+        Log.e("true",couponDiscountStr);
+        if (!couponDiscountStr.equals(0)){
+            promoCodeDiscountDisplayTxt.setText("-₹" + couponDiscountStr);
+            promoCodeDiscountLL.setVisibility(View.VISIBLE);
+        }
+        setOrderSummaryDetails();
         // Change Address Setup
         changeAddressTxtBtn = findViewById(R.id.changeAddressTxt);
         changeAddressTxtBtn.setOnClickListener(v -> {
@@ -288,11 +301,12 @@ public class CheckOutOrderActivity extends AppCompatActivity {
         };
         MySingleton.getInstance(this).addToRequestQueue(jsonObjectRequest);
     }
-    int totalAmount = 0,finalTotalAmount = 0,shippingCharge = 0,discount = 0;
+    int totalAmount = 0,finalTotalAmount = 0,shippingCharge = 0,discount = 0,couponDiscount = 0;
     public void setOrderSummaryDetails() {
-        discount = getIntent().getIntExtra("additionDiscount",0);
+        couponDiscount = Integer.parseInt(couponDiscountStr);
         for (int i = 0; i < checkOutModelArrayList.size(); i++) {
             totalAmount += Integer.parseInt(checkOutModelArrayList.get(i).getProductMRP()) * Integer.parseInt(cartItemModelArrayList.get(i).getProductQuantity());
+            discount += Integer.parseInt(cartItemModelArrayList.get(i).getDiscountAmount());
         }
         if (totalAmount > 500){
             finalTotalAmount = totalAmount;
@@ -301,6 +315,9 @@ public class CheckOutOrderActivity extends AppCompatActivity {
             finalTotalAmount = totalAmount + 99;
         }
         finalTotalAmount -= discount;
+        if (couponDiscount != 0){
+            finalTotalAmount -= couponDiscount;
+        }
         subTotalDisplayTxt.setText("₹" + String.valueOf(totalAmount) + ".00");
         totalAmountDisplayTxt.setText("₹" + String.valueOf(finalTotalAmount) + ".00");
         discountDisplayTxt.setText("-₹" + String.valueOf(discount) + ".00");
@@ -341,14 +358,14 @@ public class CheckOutOrderActivity extends AppCompatActivity {
         addressLine3Txt.setText(addressLine3);
     }
     public void checkOut() {
-        String addAddressURL = Constant.BASE_URL + "order/checkout";
+        String chekoutURL = Constant.BASE_URL + "order/checkout";
 
         JSONObject jsonObject = new JSONObject();
         try {
             jsonObject.put("totalAmount", totalAmount);
             jsonObject.put("shippingCharges", shippingCharge);
             jsonObject.put("taxAmount", 0);
-            jsonObject.put("discounts", discount);
+            jsonObject.put("discounts", discount + couponDiscount);
             jsonObject.put("finalAmount", finalTotalAmount);
             jsonObject.put("paymentMethod", paymentMethodStr);
             jsonObject.put("addressId", selectedAddressId);
@@ -356,12 +373,12 @@ public class CheckOutOrderActivity extends AppCompatActivity {
             e.printStackTrace();
         }
 
-        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.POST, addAddressURL, jsonObject,
+        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.POST, chekoutURL, jsonObject,
                 new Response.Listener<JSONObject>() {
                     @Override
                     public void onResponse(JSONObject response) {
-                        JSONObject orderObject = response.optJSONObject("order");
-                        String orderId = orderObject.optString("id");
+                        JSONObject orderObject = response.optJSONObject("payment");
+                        String orderId = orderObject.optString("orderId");
 
                         if (paymentMethodStr.equals("COD")){
                             placeCODOrder(orderId);
@@ -409,7 +426,7 @@ public class CheckOutOrderActivity extends AppCompatActivity {
             e.printStackTrace();
         }
 
-        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, addAddressURL, null,
+        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.POST, addAddressURL, jsonObject,
                 new Response.Listener<JSONObject>() {
                     @Override
                     public void onResponse(JSONObject response) {

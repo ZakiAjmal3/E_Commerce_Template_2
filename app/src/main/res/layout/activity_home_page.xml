@@ -3,10 +3,9 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/main"
-    android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".Activities.HomePageActivity">
-
+    tools:context=".Activities.HomePageActivity"
+    android:layout_width="match_parent">
     <RelativeLayout
         android:id="@+id/topBar"
         android:layout_width="match_parent"
@@ -50,24 +49,29 @@
             android:textStyle="bold"
             android:visibility="gone" />
     </RelativeLayout>
+
     <FrameLayout
         android:id="@+id/frameLayout"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_above="@id/bottom_navigation"
-        android:layout_below="@id/topBar"/>
+        android:layout_below="@id/topBar" />
+
     <com.google.android.material.bottomnavigation.BottomNavigationView
         android:id="@+id/bottom_navigation"
         android:layout_width="match_parent"
-        android:layout_height="70dp"
-        style="@style/Widget.MaterialComponents.BottomNavigationView"
+        android:layout_height="60dp"
         android:layout_alignParentBottom="true"
+        android:layout_marginBottom="0dp"
+        android:fitsSystemWindows="true"
         android:paddingBottom="0dp"
         app:itemBackground="@color/bottom_grey"
-        app:labelVisibilityMode="labeled"
-        app:menu="@menu/bottom_menu"
         app:itemIconSize="27dp"
+        app:itemPaddingTop="5dp"
         app:itemTextAppearanceActive="@style/TextAppearance.MaterialComponents.Caption"
         app:itemTextAppearanceInactive="@style/TextAppearance.MaterialComponents.Caption"
- />
+        app:labelVisibilityMode="labeled"
+        app:menu="@menu/bottom_menu" />
+
+
 </RelativeLayout>

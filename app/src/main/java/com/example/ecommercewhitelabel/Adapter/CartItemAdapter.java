@@ -1,19 +1,25 @@
 package com.example.ecommercewhitelabel.Adapter;
 
 import android.annotation.SuppressLint;
+import android.app.Dialog;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.os.Handler;
 import android.text.Spannable;
 import android.text.SpannableString;
 import android.text.SpannableStringBuilder;
+import android.text.TextUtils;
 import android.text.style.ForegroundColorSpan;
 import android.text.style.StrikethroughSpan;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.Window;
+import android.view.WindowManager;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -55,6 +61,7 @@ public class CartItemAdapter extends RecyclerView.Adapter<CartItemAdapter.ViewHo
     SpannableStringBuilder spannableText;
     SessionManager sessionManager;
     String authToken;
+    Dialog progressBarDialog;
     public CartItemAdapter(ArrayList<CartItemModel> productDetailsList, Fragment context) {
         this.productDetailsList = productDetailsList;
         this.context = context;
@@ -74,6 +81,8 @@ public class CartItemAdapter extends RecyclerView.Adapter<CartItemAdapter.ViewHo
     public void onBindViewHolder(@NonNull CartItemAdapter.ViewHolder holder, @SuppressLint("RecyclerView") int position) {
 
         holder.productTitleTxt.setText(productDetailsList.get(position).getProductTitle());
+        holder.productTitleTxt.setEllipsize(TextUtils.TruncateAt.END);
+        holder.productTitleTxt.setMaxLines(1);
 //        holder.productSizeTxt.setText(productDetailsList.get(position).getProductSize());
         holder.productSizeTxt.setText("Large");
 //        holder.productColorTxt.setText(productDetailsList.get(position).getProductColor());
@@ -111,6 +120,14 @@ public class CartItemAdapter extends RecyclerView.Adapter<CartItemAdapter.ViewHo
         holder.deleteBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                progressBarDialog = new Dialog(context.getContext());
+                progressBarDialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
+                progressBarDialog.setContentView(R.layout.progress_bar_dialog);
+                progressBarDialog.setCancelable(false);
+                progressBarDialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+                progressBarDialog.getWindow().setGravity(Gravity.CENTER); // Center the dialog
+                progressBarDialog.getWindow().setLayout(WindowManager.LayoutParams.WRAP_CONTENT, WindowManager.LayoutParams.WRAP_CONTENT); // Adjust the size
+                progressBarDialog.show();
                 deleteItem(position);
 //                productDetailsList.remove(position);
 //                notifyDataSetChanged();
@@ -214,11 +231,13 @@ public class CartItemAdapter extends RecyclerView.Adapter<CartItemAdapter.ViewHo
                         ((CartItemFragment) context).setOrderSummaryDetails();
                         ((CartItemFragment) context).checkCartItemArraySize();
                         setCartCount();
+                        progressBarDialog.dismiss();
                     }
                 },
                 new Response.ErrorListener() {
                     @Override
                     public void onErrorResponse(VolleyError error) {
+                        progressBarDialog.dismiss();
                         String errorMessage = "Error: " + error.toString();
                         if (error.networkResponse != null) {
                             try {

@@ -10,11 +10,11 @@ import android.view.Gravity;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
-import android.widget.Spinner;
 import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
@@ -33,7 +33,6 @@ import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.example.ecommercewhitelabel.Adapter.MyOrdersAdapter;
-import com.example.ecommercewhitelabel.Model.AddressItemModel;
 import com.example.ecommercewhitelabel.Model.MyOrderModel;
 import com.example.ecommercewhitelabel.Model.ProductImagesModel;
 import com.example.ecommercewhitelabel.R;
@@ -59,6 +58,9 @@ public class MyOrdersActivity extends AppCompatActivity {
     ArrayAdapter<String> dropdownStatusArrayAdapter;
     ArrayAdapter<String> dropdownFilterArrayAdapter;
     AutoCompleteTextView autoCompStatusTV,autoCompFilterTV;
+    final String[] selectedStatusItem = {""};
+    final String[] selectedFilterItem = {""};
+    int itemPerPage = 10, totalPages = 1,currentPage = 1;
     SessionManager sessionManager;
     String authToken;
     Dialog progressBarDialog;
@@ -99,7 +101,7 @@ public class MyOrdersActivity extends AppCompatActivity {
         progressBarDialog.getWindow().setLayout(WindowManager.LayoutParams.WRAP_CONTENT, WindowManager.LayoutParams.WRAP_CONTENT); // Adjust the size
         progressBarDialog.show();
 
-        setUpSpinners();
+        setUpDropDown();
 
         myOrderArrayList = new ArrayList<>();
         myOrderRecyclerView.setLayoutManager(new LinearLayoutManager(this));
@@ -112,20 +114,61 @@ public class MyOrdersActivity extends AppCompatActivity {
         });
         getAllOrders();
     }
-    private void setUpSpinners() {
+    private void setUpDropDown() {
         String[] languages = getResources().getStringArray(R.array.my_orders_status_sort_list);
         dropdownStatusArrayAdapter = new ArrayAdapter<>(this, R.layout.drop_down_item_text_layout, languages);
         autoCompStatusTV.setAdapter(dropdownStatusArrayAdapter);
         autoCompStatusTV.setDropDownBackgroundDrawable(new ColorDrawable(Color.WHITE));
-
+        autoCompStatusTV.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                selectedStatusItem[0] = parent.getItemAtPosition(position).toString();
+                noDataLayout.setVisibility(View.GONE);
+                myOrderRecyclerView.setVisibility(View.GONE);
+                progressBarDialog = new Dialog(MyOrdersActivity.this);
+                progressBarDialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
+                progressBarDialog.setContentView(R.layout.progress_bar_dialog);
+                progressBarDialog.setCancelable(false);
+                progressBarDialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+                progressBarDialog.getWindow().setGravity(Gravity.CENTER); // Center the dialog
+                progressBarDialog.getWindow().setLayout(WindowManager.LayoutParams.WRAP_CONTENT, WindowManager.LayoutParams.WRAP_CONTENT); // Adjust the size
+                progressBarDialog.show();
+                getAllOrders();
+            }
+        });
         String[] languages2 = getResources().getStringArray(R.array.my_orders_filter_sort_list);
         dropdownFilterArrayAdapter = new ArrayAdapter<>(this, R.layout.drop_down_item_text_layout, languages2);
-        autoCompFilterTV.setAdapter(dropdownStatusArrayAdapter);
+        autoCompFilterTV.setAdapter(dropdownFilterArrayAdapter);
         autoCompFilterTV.setDropDownBackgroundDrawable(new ColorDrawable(Color.WHITE));
-
+        autoCompFilterTV.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                selectedFilterItem[0] = parent.getItemAtPosition(position).toString();
+                noDataLayout.setVisibility(View.GONE);
+                myOrderRecyclerView.setVisibility(View.GONE);
+                progressBarDialog = new Dialog(MyOrdersActivity.this);
+                progressBarDialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
+                progressBarDialog.setContentView(R.layout.progress_bar_dialog);
+                progressBarDialog.setCancelable(false);
+                progressBarDialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+                progressBarDialog.getWindow().setGravity(Gravity.CENTER); // Center the dialog
+                progressBarDialog.getWindow().setLayout(WindowManager.LayoutParams.WRAP_CONTENT, WindowManager.LayoutParams.WRAP_CONTENT); // Adjust the size
+                progressBarDialog.show();
+                getAllOrders();
+            }
+        });
     }
+
     private void getAllOrders() {
-        String orderURL = Constant.BASE_URL + "order";
+        String filter = "",status = "";
+        if (!selectedFilterItem[0].equals("All")){
+            filter = selectedFilterItem[0];
+        }
+        if (!selectedStatusItem[0].equals("All")) {
+            status = selectedStatusItem[0];
+        }
+        String orderURL = Constant.BASE_URL + "order?pageNumber=" + currentPage + "&pageSize=" + itemPerPage
+                + "&orderDate=" + filter + "&status=" + status;
         JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, orderURL, null,
                 new Response.Listener<JSONObject>() {
                     @Override
@@ -159,13 +202,14 @@ public class MyOrdersActivity extends AppCompatActivity {
                             if (myOrderArrayList.isEmpty()){
                                 progressBarDialog.dismiss();
                                 noDataLayout.setVisibility(View.VISIBLE);
-                                mainNestedLayout.setVisibility(View.GONE);
+                                myOrderRecyclerView.setVisibility(View.GONE);
                             }else {
                                 progressBarDialog.dismiss();
                                 noDataLayout.setVisibility(View.GONE);
                                 mainNestedLayout.setVisibility(View.VISIBLE);
                                 myOrdersAdapter = new MyOrdersAdapter(myOrderArrayList, MyOrdersActivity.this);
                                 myOrderRecyclerView.setAdapter(myOrdersAdapter);
+                                myOrderRecyclerView.setVisibility(View.VISIBLE);
                             }
                         } catch (JSONException e) {
                             progressBarDialog.dismiss();

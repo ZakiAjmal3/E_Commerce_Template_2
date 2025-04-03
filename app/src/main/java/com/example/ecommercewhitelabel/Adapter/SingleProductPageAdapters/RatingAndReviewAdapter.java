@@ -73,6 +73,19 @@ public class RatingAndReviewAdapter extends RecyclerView.Adapter<RatingAndReview
             reviewContentTxt = itemView.findViewById(R.id.reviewContentTxt);
             reviewDateTxt = itemView.findViewById(R.id.reviewDateTxt);
 
+            if (productDetailsList.size() >2){
+                ViewGroup.LayoutParams params = itemView.getLayoutParams();
+                if (params != null) {
+                    params.width = (int) (250 * itemView.getContext().getResources().getDisplayMetrics().density);
+                    itemView.setLayoutParams(params);
+                }
+            }else {
+                ViewGroup.LayoutParams params = itemView.getLayoutParams();
+                if (params != null) {
+                    params.width = ViewGroup.LayoutParams.WRAP_CONTENT;;
+                    itemView.setLayoutParams(params);
+                }
+            }
         }
     }
 }

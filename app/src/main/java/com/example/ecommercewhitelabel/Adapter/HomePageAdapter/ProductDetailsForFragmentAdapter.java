@@ -1,8 +1,10 @@
 package com.example.ecommercewhitelabel.Adapter.HomePageAdapter;
 
 import android.annotation.SuppressLint;
+import android.app.Dialog;
 import android.content.Intent;
 import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.os.Handler;
 import android.text.Spannable;
 import android.text.SpannableString;
@@ -11,9 +13,12 @@ import android.text.TextUtils;
 import android.text.style.ForegroundColorSpan;
 import android.text.style.StrikethroughSpan;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.Window;
+import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -31,6 +36,7 @@ import com.android.volley.toolbox.JsonObjectRequest;
 import com.bumptech.glide.Glide;
 import com.example.ecommercewhitelabel.Activities.HomePageActivity;
 import com.example.ecommercewhitelabel.Activities.SingleProductDetailsActivity;
+import com.example.ecommercewhitelabel.Fragment.HomePageFragment;
 import com.example.ecommercewhitelabel.Fragment.WishListFragment;
 import com.example.ecommercewhitelabel.Model.ProductDetailsModel;
 import com.example.ecommercewhitelabel.R;
@@ -53,6 +59,7 @@ public class ProductDetailsForFragmentAdapter extends RecyclerView.Adapter<Produ
     SpannableStringBuilder spannableText;
     SessionManager sessionManager;
     String authToken;
+    Dialog progressBarDialog;
     public ProductDetailsForFragmentAdapter(ArrayList<ProductDetailsModel> productDetailsList, Fragment context) {
         this.productDetailsList = productDetailsList;
         this.context = context;
@@ -146,6 +153,14 @@ public class ProductDetailsForFragmentAdapter extends RecyclerView.Adapter<Produ
                 @Override
                 public void onClick(View v) {
                     setWishlistCount();
+                    progressBarDialog = new Dialog(context.getContext());
+                    progressBarDialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
+                    progressBarDialog.setContentView(R.layout.progress_bar_dialog);
+                    progressBarDialog.setCancelable(false);
+                    progressBarDialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+                    progressBarDialog.getWindow().setGravity(Gravity.CENTER); // Center the dialog
+                    progressBarDialog.getWindow().setLayout(WindowManager.LayoutParams.WRAP_CONTENT, WindowManager.LayoutParams.WRAP_CONTENT); // Adjust the size
+                    progressBarDialog.show();
                     removeFromWishList(position);
                 }
             });
@@ -176,6 +191,7 @@ public class ProductDetailsForFragmentAdapter extends RecyclerView.Adapter<Produ
                         }
                         sessionManager.getWishlistFromServer();
                         notifyDataSetChanged();
+                        progressBarDialog.dismiss();
                     }
                 },
                 new Response.ErrorListener() {
@@ -286,6 +302,13 @@ public class ProductDetailsForFragmentAdapter extends RecyclerView.Adapter<Produ
 
                 }
             });
+            if (context instanceof HomePageFragment) {
+                ViewGroup.LayoutParams params = itemView.getLayoutParams();
+                if (params != null) {
+                    params.width = (int) (250 * itemView.getContext().getResources().getDisplayMetrics().density);
+                    itemView.setLayoutParams(params);
+                }
+            }
         }
     }
 }

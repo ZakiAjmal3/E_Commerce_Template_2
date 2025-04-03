@@ -160,6 +160,8 @@ public class MensCasualClothesActivity extends AppCompatActivity {
                     nextItemLoadingProgressBar.setVisibility(View.VISIBLE);
                     getNewArrivalProducts();
                     Log.e("Scroll","Scroll Happened");
+                }else {
+                    nextItemLoadingProgressBar.setVisibility(View.GONE);
                 }
             }
         });

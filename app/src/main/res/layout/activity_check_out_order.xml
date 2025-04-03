@@ -362,10 +362,39 @@
                             android:textStyle="bold"/>
                     </LinearLayout>
                     <LinearLayout
-                        android:id="@+id/deliveryFeeLL"
+                        android:id="@+id/promoCodeDiscountLL"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_below="@+id/discountLL"
+                        android:layout_marginLeft="10dp"
+                        android:layout_marginRight="10dp"
+                        android:layout_marginTop="10dp"
+                        android:visibility="gone"
+                        android:weightSum="2"
+                        android:orientation="horizontal">
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="Promo code discount"
+                            android:textSize="17sp"
+                            />
+                        <TextView
+                            android:id="@+id/promoCodeDiscountDisplayTxt"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:textAlignment="viewEnd"
+                            android:textSize="17sp"
+                            android:text="132"
+                            android:textColor="@color/red"
+                            android:textStyle="bold"/>
+                    </LinearLayout>
+                    <LinearLayout
+                        android:id="@+id/deliveryFeeLL"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_below="@+id/promoCodeDiscountLL"
                         android:layout_marginLeft="10dp"
                         android:layout_marginRight="10dp"
                         android:layout_marginTop="10dp"
@@ -385,7 +414,7 @@
                             android:layout_weight="1"
                             android:textAlignment="viewEnd"
                             android:textSize="17sp"
-                            android:text="132"
+                            android:text="0"
                             android:textColor="@color/black"
                             android:textStyle="bold"/>
                     </LinearLayout>

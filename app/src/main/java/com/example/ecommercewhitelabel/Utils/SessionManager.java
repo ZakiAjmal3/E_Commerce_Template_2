@@ -192,152 +192,169 @@ public class SessionManager {
         String wishlistURL = Constant.BASE_URL + "wishlist";
         Log.e("ProductsURL", wishlistURL);
 
-        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, wishlistURL, null,
-                new Response.Listener<JSONObject>() {
-                    @Override
-                    public void onResponse(JSONObject response) {
-                        try {
-                            JSONArray dataArray = response.optJSONArray("data");
-                            if (dataArray != null) {
-                                for (int i = 0; i < dataArray.length(); i++) {
-                                    JSONObject productObj1 = dataArray.getJSONObject(i);
-                                    JSONObject productObj = productObj1.getJSONObject("product");
+        if (isLoggedIn()) {
+            JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, wishlistURL, null,
+                    new Response.Listener<JSONObject>() {
+                        @Override
+                        public void onResponse(JSONObject response) {
+                            try {
+                                JSONArray dataArray = response.optJSONArray("data");
+                                if (dataArray != null) {
+                                    for (int i = 0; i < dataArray.length(); i++) {
+                                        JSONObject productObj1 = dataArray.getJSONObject(i);
+                                        JSONObject productObj = productObj1.getJSONObject("product");
 
-                                    String productId = productObj.optString("_id", null);
-                                    String title = productObj.optString("title", null);
+                                        String productId = productObj.optString("_id", null);
+                                        String title = productObj.optString("title", null);
 
-                                    JSONObject slugObj = productObj.optJSONObject("meta");
-                                    String slug = (slugObj != null) ? slugObj.optString("slug", null) : null;
+                                        JSONObject slugObj = productObj.optJSONObject("meta");
+                                        String slug = (slugObj != null) ? slugObj.optString("slug", null) : null;
 
-                                    String MRP = productObj.optString("MRP", null);
-                                    String price = productObj.optString("price", null);
+                                        String MRP = productObj.optString("MRP", null);
+                                        String price = productObj.optString("price", null);
 
-                                    JSONObject discountObj = productObj.optJSONObject("discount");
-                                    String discountAmount = (discountObj != null) ? discountObj.optString("amount", null) : null;
-                                    String discountPercentage = (discountObj != null) ? discountObj.optString("percentage", null) : null;
+                                        JSONObject discountObj = productObj.optJSONObject("discount");
+                                        String discountAmount = (discountObj != null) ? discountObj.optString("amount", null) : null;
+                                        String discountPercentage = (discountObj != null) ? discountObj.optString("percentage", null) : null;
 
-                                    String stock = productObj.optString("stock", null);
-                                    String description = productObj.optString("description", null);
+                                        String stock = productObj.optString("stock", null);
+                                        String description = productObj.optString("description", null);
 
-                                    String SKU = productObj.optString("SKU", null);
+                                        String SKU = productObj.optString("SKU", null);
 
-                                    // Handling Images
-                                    ArrayList<ProductImagesModel> imagesList = new ArrayList<>();
-                                    JSONArray imageArray = productObj.optJSONArray("images");
-                                    if (imageArray != null) {
-                                        for (int j = 0; j < imageArray.length(); j++) {
-                                            String imageUrl = imageArray.optString(j, null);
-                                            if (imageUrl != null) {
-                                                Log.e("JSONIMG", imageUrl);
-                                                imagesList.add(new ProductImagesModel(imageUrl));
+                                        // Handling Images
+                                        ArrayList<ProductImagesModel> imagesList = new ArrayList<>();
+                                        JSONArray imageArray = productObj.optJSONArray("images");
+                                        if (imageArray != null) {
+                                            for (int j = 0; j < imageArray.length(); j++) {
+                                                String imageUrl = imageArray.optString(j, null);
+                                                if (imageUrl != null) {
+                                                    Log.e("JSONIMG", imageUrl);
+                                                    imagesList.add(new ProductImagesModel(imageUrl));
+                                                }
                                             }
                                         }
+
+                                        String store = productObj.optString("store", null);
+                                        String category = productObj.optString("category", null);
+                                        String inputTag = productObj.optString("inputTag", null);
+
+                                        wishList.add(new ProductDetailsModel(
+                                                productId, title, slug, MRP, price, discountAmount, discountPercentage,
+                                                stock, description, null, SKU, store, category, inputTag, "4", 1, imagesList
+                                        ));
                                     }
-
-                                    String store = productObj.optString("store", null);
-                                    String category = productObj.optString("category", null);
-                                    String inputTag = productObj.optString("inputTag", null);
-
-                                    wishList.add(new ProductDetailsModel(
-                                            productId, title, slug, MRP, price, discountAmount, discountPercentage,
-                                            stock, description, null, SKU, store, category, inputTag, "4", 1, imagesList
-                                    ));
+                                    editor.remove(KEY_WISHLIST);
+                                    String json = gson.toJson(wishList); // Convert to JSON
+                                    editor.putString(WISHLIST_KEY, json);
+                                    editor.apply();
                                 }
-                                editor.remove(KEY_WISHLIST);
-                                String json = gson.toJson(wishList); // Convert to JSON
-                                editor.putString(WISHLIST_KEY, json);
-                                editor.apply();
-                            }
-                        } catch (JSONException e) {
+                            } catch (JSONException e) {
 //                            progressBarDialog.dismiss();
-                            e.printStackTrace();
-                            Log.e("JSONParsingError", "Error parsing response: " + e.getMessage());
-                        }
-                    }
-                },
-                new Response.ErrorListener() {
-                    @Override
-                    public void onErrorResponse(VolleyError error) {
-//                        progressBarDialog.dismiss();
-                        String errorMessage = "Error: " + error.toString();
-                        if (error.networkResponse != null) {
-                            try {
-                                String jsonError = new String(error.networkResponse.data);
-                                JSONObject jsonObject = new JSONObject(jsonError);
-                                String message = jsonObject.optString("message", "Unknown error");
-//                                Toast.makeText(getContext(), message, Toast.LENGTH_LONG).show();
-                            } catch (Exception e) {
                                 e.printStackTrace();
+                                Log.e("JSONParsingError", "Error parsing response: " + e.getMessage());
                             }
                         }
-                        Log.e("ExamListError", errorMessage);
-                    }
-                }) {
-            @Override
-            public Map<String, String> getHeaders() throws AuthFailureError {
-                Map<String, String> headers = new HashMap<>();
-                headers.put("Content-Type", "application/json");
-                headers.put("Authorization", "Bearer " + getUserData().get("authToken"));
-                return headers;
-            }
-        };
-        MySingleton.getInstance(ctx.getApplicationContext()).addToRequestQueue(jsonObjectRequest);
+                    },
+                    new Response.ErrorListener() {
+                        @Override
+                        public void onErrorResponse(VolleyError error) {
+//                        progressBarDialog.dismiss();
+                            String errorMessage = "Error: " + error.toString();
+                            if (error.networkResponse != null) {
+                                try {
+                                    String jsonError = new String(error.networkResponse.data);
+                                    JSONObject jsonObject = new JSONObject(jsonError);
+                                    String message = jsonObject.optString("message", "Unknown error");
+//                                Toast.makeText(getContext(), message, Toast.LENGTH_LONG).show();
+                                } catch (Exception e) {
+                                    e.printStackTrace();
+                                }
+                            }
+                            Log.e("ExamListError", errorMessage);
+                        }
+                    }) {
+                @Override
+                public Map<String, String> getHeaders() throws AuthFailureError {
+                    Map<String, String> headers = new HashMap<>();
+                    headers.put("Content-Type", "application/json");
+                    headers.put("Authorization", "Bearer " + getUserData().get("authToken"));
+                    return headers;
+                }
+            };
+            MySingleton.getInstance(ctx.getApplicationContext()).addToRequestQueue(jsonObjectRequest);
+        }
     }
     public void getCartFromServer() {
         ArrayList<CartItemModel> cartItemModelArrayList = new ArrayList<>();
         String cartURL = Constant.BASE_URL + "cart";
-        Log.e("ProductsURL",cartURL);
+        Log.e("ProductsURL", cartURL);
+
         JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, cartURL, null,
                 new Response.Listener<JSONObject>() {
                     @Override
                     public void onResponse(JSONObject response) {
                         try {
                             clearCart();
-                            JSONObject dataObj = response.getJSONObject("data");
-                            String cartId = dataObj.getString("_id");
-                            JSONArray itemArray = dataObj.getJSONArray("items");
-                            for (int i = 0; i < itemArray.length(); i++) {
-                                JSONObject productObj0 = itemArray.getJSONObject(i);
-                                String quantity = productObj0.getString("quantity");
-                                JSONObject productObj = productObj0.getJSONObject("product");
-                                String productId = productObj.getString("_id");
-                                String title = productObj.getString("title");
+                            JSONObject dataObj = response.optJSONObject("data");
+                            if (dataObj != null) {
+                                String cartId = dataObj.optString("_id", null);
+                                JSONArray itemArray = dataObj.optJSONArray("items");
+                                if (itemArray != null) {
+                                    for (int i = 0; i < itemArray.length(); i++) {
+                                        JSONObject productObj0 = itemArray.optJSONObject(i);
+                                        if (productObj0 != null) {
+                                            String quantity = productObj0.optString("quantity", "1");
 
-                                JSONObject slugObj = productObj.getJSONObject("meta");
-                                String slug = slugObj.getString("slug");
+                                            JSONObject productObj = productObj0.optJSONObject("product");
+                                            if (productObj != null) {
+                                                String productId = productObj.optString("_id", null);
+                                                String title = productObj.optString("title", null);
 
-                                String MRP = productObj.getString("MRP");
-                                String price = productObj.getString("price");
+                                                JSONObject slugObj = productObj.optJSONObject("meta");
+                                                String slug = (slugObj != null) ? slugObj.optString("slug", null) : null;
 
-                                JSONObject discountObj = productObj.getJSONObject("discount");
-                                String discountAmount = discountObj.getString("amount");
-                                String discountPercentage = discountObj.getString("percentage");
+                                                String MRP = productObj.optString("MRP", null);
+                                                String price = productObj.optString("price", null);
 
-                                String stock = productObj.getString("stock");
-                                String description = productObj.getString("description");
+                                                JSONObject discountObj = productObj.optJSONObject("discount");
+                                                String discountAmount = (discountObj != null) ? discountObj.optString("amount", null) : null;
+                                                String discountPercentage = (discountObj != null) ? discountObj.optString("percentage", null) : null;
 
-                                String SKU = productObj.getString("SKU");
+                                                String stock = productObj.optString("stock", null);
+                                                String description = productObj.optString("description", null);
+                                                String SKU = productObj.optString("SKU", null);
 
-                                ArrayList<ProductImagesModel> imagesList = new ArrayList<>();
-                                JSONArray imageArray = productObj.getJSONArray("images");
-                                for (int j = 0; j < imageArray.length(); j++) {
-                                    String imageUrl = imageArray.getString(j);
-                                    Log.e("JSONIMG",imageUrl);
-                                    imagesList.add(new ProductImagesModel(imageUrl));
+                                                ArrayList<ProductImagesModel> imagesList = new ArrayList<>();
+                                                JSONArray imageArray = productObj.optJSONArray("images");
+                                                if (imageArray != null) {
+                                                    for (int j = 0; j < imageArray.length(); j++) {
+                                                        String imageUrl = imageArray.optString(j, null);
+                                                        if (imageUrl != null) {
+                                                            Log.e("JSONIMG", imageUrl);
+                                                            imagesList.add(new ProductImagesModel(imageUrl));
+                                                        }
+                                                    }
+                                                }
+
+                                                String store = productObj.optString("store", null);
+                                                String category = productObj.optString("category", null);
+                                                String inputTag = productObj.optString("inputTag", null);
+
+                                                cartItemModelArrayList.add(new CartItemModel(cartId, productId, title, quantity,
+                                                        slug, MRP, price, discountAmount, discountPercentage, stock, description,
+                                                        null, SKU, store, category, inputTag, "4", 0, imagesList));
+                                            }
+                                        }
+                                    }
                                 }
-
-                                String store = productObj.getString("store");
-                                String category = productObj.getString("category");
-                                String inputTag = productObj.getString("inputTag");
-                                cartItemModelArrayList.add(new CartItemModel(cartId,productId,title,quantity,
-                                        slug,MRP, price,discountAmount,discountPercentage,stock,description,
-                                        null,SKU, store,category,inputTag,"4",0,imagesList));
                             }
-                            String json = gson.toJson(cartItemModelArrayList); // Convert to JSON
+
+                            String json = gson.toJson(cartItemModelArrayList);
                             editor.putString(CART_KEY, json);
                             editor.apply();
-                        } catch (JSONException e) {
-                            throw new RuntimeException(e);
+                        } catch (Exception e) {
+                            Log.e("JSONError", "Unexpected error: " + e.getMessage());
                         }
                     }
                 },
@@ -347,11 +364,10 @@ public class SessionManager {
                         String errorMessage = "Error: " + error.toString();
                         if (error.networkResponse != null) {
                             try {
-                                // Parse the error response
                                 String jsonError = new String(error.networkResponse.data);
                                 JSONObject jsonObject = new JSONObject(jsonError);
                                 String message = jsonObject.optString("message", "Unknown error");
-                                // Now you can use the message
+                                Log.e("API Error", message);
                             } catch (Exception e) {
                                 e.printStackTrace();
                             }
@@ -367,8 +383,10 @@ public class SessionManager {
                 return headers;
             }
         };
+
         MySingleton.getInstance(ctx.getApplicationContext()).addToRequestQueue(jsonObjectRequest);
     }
+
     public int getWishListCount() {
         return getWishList().size();
     }

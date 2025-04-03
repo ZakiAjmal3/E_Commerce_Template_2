@@ -14,6 +14,7 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 
+import com.bumptech.glide.Glide;
 import com.example.ecommercewhitelabel.Activities.CheckOutOrderActivity;
 import com.example.ecommercewhitelabel.Activities.HomePageActivity;
 import com.example.ecommercewhitelabel.Model.CheckOutModel;
@@ -41,8 +42,11 @@ public class CheckOutAdapter extends RecyclerView.Adapter<CheckOutAdapter.ViewHo
     public void onBindViewHolder(@NonNull CheckOutAdapter.ViewHolder holder, @SuppressLint("RecyclerView") int position) {
         holder.productTitleTxt.setText(productDetailsList.get(position).getProductTitle());
         holder.productPriceTxt.setText("₹" +productDetailsList.get(position).getProductPrice() + " x " + productDetailsList.get(position).getProductQuantity());
-//        holder.productImg.setImageResource(productDetailsList.get(position).getProductImage());
-
+        if (!productDetailsList.get(position).getProductImg().isEmpty()) {
+            Glide.with(context).load(productDetailsList.get(position).getProductImg()).into(holder.productImg);
+        }else {
+            Glide.with(context).load(R.drawable.no_image);
+        }
         holder.editLL.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {

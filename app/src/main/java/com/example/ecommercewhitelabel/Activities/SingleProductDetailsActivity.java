@@ -1,6 +1,7 @@
 package com.example.ecommercewhitelabel.Activities;
 
 import android.app.Dialog;
+import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Build;
@@ -185,9 +186,9 @@ public class SingleProductDetailsActivity extends AppCompatActivity {
             public void onClick(View v) {
                 if (!sessionManager.isLoggedIn()){
                     AlertDialog.Builder builder = new AlertDialog.Builder(SingleProductDetailsActivity.this);
-                    AlertDialog dialog = builder.setTitle("Add to Cart")
-                            .setMessage("Do you want to add this item to your cart?")
-                            .setPositiveButton("Yes", (dialog1, which) -> addToCart()) // Call addToCart() on "Yes"
+                    AlertDialog dialog = builder.setTitle("Login Required")
+                            .setMessage("Please login to add this item to your cart?")
+                            .setPositiveButton("Proceed to login", (dialog1, which) -> startActivity(new Intent(SingleProductDetailsActivity.this, LoginActivity.class))) // Call addToCart() on "Yes"
                             .setNegativeButton("Cancel", (dialog1, which) ->
                                     dialog1.dismiss()) // Close dialog on "Cancel"
                             .create();

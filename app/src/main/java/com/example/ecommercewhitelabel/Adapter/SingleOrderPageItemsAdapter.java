@@ -1,5 +1,6 @@
 package com.example.ecommercewhitelabel.Adapter;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
 import android.view.LayoutInflater;
@@ -14,6 +15,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
 import com.example.ecommercewhitelabel.Activities.HomePageActivity;
+import com.example.ecommercewhitelabel.Activities.SingleProductDetailsActivity;
 import com.example.ecommercewhitelabel.Model.SingleOrderPageItemsModel;
 import com.example.ecommercewhitelabel.R;
 
@@ -35,7 +37,7 @@ public class SingleOrderPageItemsAdapter extends RecyclerView.Adapter<SingleOrde
     }
 
     @Override
-    public void onBindViewHolder(@NonNull SingleOrderPageItemsAdapter.ViewHolder holder, int position) {
+    public void onBindViewHolder(@NonNull SingleOrderPageItemsAdapter.ViewHolder holder, @SuppressLint("RecyclerView") int position) {
 
         holder.productTitle.setText(productDetailsList.get(position).getProductTitle());
         holder.productPrice.setText("₹ " + productDetailsList.get(position).getProductPrice());
@@ -48,8 +50,8 @@ public class SingleOrderPageItemsAdapter extends RecyclerView.Adapter<SingleOrde
         holder.buyItAgain.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent(context, HomePageActivity.class);
-                intent.putExtra("LoadCartFrag",true);
+                Intent intent = new Intent(context, SingleProductDetailsActivity.class);
+                intent.putExtra("productId",productDetailsList.get(position).getProductId());
                 context.startActivity(intent);
             }
         });

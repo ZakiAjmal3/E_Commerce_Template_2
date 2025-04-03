@@ -1,6 +1,7 @@
 package com.example.ecommercewhitelabel.Adapter;
 
 import android.annotation.SuppressLint;
+import android.app.Dialog;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
@@ -147,7 +148,8 @@ public class CasualMensClothsForActivityAdapter extends RecyclerView.Adapter<Cas
         new Handler().postDelayed(new Runnable() {
             @Override
             public void run() {
-                ((HomePageActivity) context).setWishlistCount();
+                HomePageActivity obj = new HomePageActivity();
+                obj.setWishlistCount();
             }
         }, 1500);  // Match the duration of the logo animation
     }

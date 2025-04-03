@@ -1,11 +1,16 @@
 package com.example.ecommercewhitelabel.Fragment;
 
+import android.app.Dialog;
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.Window;
 import android.view.inputmethod.InputMethodManager;
 import android.content.Context;
 import android.view.WindowManager;
@@ -54,6 +59,8 @@ public class SearchFragment extends Fragment {
     ProgressBar nextItemLoadingProgressBar;
     NestedScrollView dressNestedScroll;
     String searchQuery = "";
+    int itemPerPage = 10, totalPages = 1,currentPage = 1;
+    Dialog progressBarDialog;
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -68,6 +75,15 @@ public class SearchFragment extends Fragment {
 
         // Set the SearchView to be expanded
         searchView.setIconified(false);
+
+        progressBarDialog = new Dialog(getContext());
+        progressBarDialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
+        progressBarDialog.setContentView(R.layout.progress_bar_dialog);
+        progressBarDialog.setCancelable(false);
+        progressBarDialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+        progressBarDialog.getWindow().setGravity(Gravity.CENTER); // Center the dialog
+        progressBarDialog.getWindow().setLayout(WindowManager.LayoutParams.WRAP_CONTENT, WindowManager.LayoutParams.WRAP_CONTENT); // Adjust the size
+        progressBarDialog.show();
 
         // Add a small delay to ensure the SearchView is initialized before requesting focus
         new Handler().postDelayed(() -> {
@@ -95,15 +111,41 @@ public class SearchFragment extends Fragment {
             public boolean onQueryTextChange(String newText) {
                 // Update search query and fetch products
                 searchQuery = newText.trim();
+                currentPage = 1;
+                casualDressArrayList.clear();
                 getNewArrivalProducts();
                 return true;
+            }
+        });
+
+        dressNestedScroll.setOnScrollChangeListener(new NestedScrollView.OnScrollChangeListener() {
+            @Override
+            public void onScrollChange(@NonNull NestedScrollView v, int scrollX, int scrollY, int oldScrollX, int oldScrollY) {
+                // Check if we are near the bottom, but leave a small threshold to avoid issues with small screens
+                Log.e("ScrollDebug", "scrollY: " + scrollY +
+                        " measuredHeight: " + v.getChildAt(0).getMeasuredHeight() +
+                        " scrollHeight: " + v.getMeasuredHeight());
+                int scrollThreshold = 50; // threshold to trigger load more data
+                int diff = (v.getChildAt(0).getMeasuredHeight() - v.getMeasuredHeight()) - scrollY;
+                Log.e("ScrollDebug", "diff: " + diff);
+                // Check if we have scrolled to the bottom or near bottom
+                if (diff <= scrollThreshold && currentPage <= totalPages) {
+                    // Only increment the page and load more data if there's more data to load
+                    currentPage++;
+                    nextItemLoadingProgressBar.setVisibility(View.VISIBLE);
+                    getNewArrivalProducts();
+                    Log.e("Scroll","Scroll Happened");
+                }else {
+                    nextItemLoadingProgressBar.setVisibility(View.GONE);
+                }
             }
         });
 
         return view;
     }
     private void getNewArrivalProducts() {
-        String newArrivalURL = Constant.BASE_URL + "product/" + sessionManager.getStoreId() + "?searchQuery=" + searchQuery;
+        String newArrivalURL = Constant.BASE_URL + "product/" + sessionManager.getStoreId() + "?searchQuery=" + searchQuery + "&pageNumber="
+                + currentPage + "&pageSize=" + itemPerPage;
         Log.e("ProductsURL", newArrivalURL);
 
         JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, newArrivalURL, null,
@@ -112,7 +154,6 @@ public class SearchFragment extends Fragment {
                     public void onResponse(JSONObject response) {
                         try {
                             JSONArray dataArray = response.optJSONArray("data");
-                            casualDressArrayList.clear();
                             if (dataArray != null) {
                                 for (int i = 0; i < dataArray.length(); i++) {
                                     JSONObject productObj = dataArray.getJSONObject(i);
@@ -169,6 +210,7 @@ public class SearchFragment extends Fragment {
                                         nextItemLoadingProgressBar.setVisibility(View.GONE);
                                         dressNestedScroll.setVisibility(View.VISIBLE);
                                         noDataLayout.setVisibility(View.GONE);
+                                        progressBarDialog.dismiss();
                                     }else {
                                         casualMensClothsForActivityAdapter.notifyDataSetChanged();
                                     }

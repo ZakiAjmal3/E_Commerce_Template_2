@@ -1,11 +1,20 @@
 package com.example.ecommercewhitelabel.Model;
 
 public class SingleOrderPageItemsModel {
-    String productImgUrl,productTitle,productPrice;
-    public SingleOrderPageItemsModel(String productImgUrl, String productTitle, String productPrice) {
+    String productId,productImgUrl,productTitle,productPrice;
+    public SingleOrderPageItemsModel(String productId, String productImgUrl, String productTitle, String productPrice) {
+        this.productId = productId;
         this.productImgUrl = productImgUrl;
         this.productTitle = productTitle;
         this.productPrice = productPrice;
+    }
+
+    public String getProductId() {
+        return productId;
+    }
+
+    public void setProductId(String productId) {
+        this.productId = productId;
     }
 
     public String getProductImgUrl() {

@@ -64,6 +64,7 @@ public class RatingAndReviewFragment extends Fragment {
     TextView allReviewCountTxt;
     Dialog progressDialog;
     RelativeLayout mainLayout;
+
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -139,7 +140,8 @@ public class RatingAndReviewFragment extends Fragment {
                             }
                             allReviewCountTxt.setText(String.valueOf(ratingAndReviewArrayList.size()));
                             reviewRecyclerView.setAdapter(new RatingAndReviewAdapter(ratingAndReviewArrayList, getContext()));
-                            mainLayout.setVisibility(View.GONE);
+                            mainLayout.setVisibility(View.VISIBLE);
+                            progressDialog.dismiss();
                         } catch (JSONException e) {
                             throw new RuntimeException(e);
                         }

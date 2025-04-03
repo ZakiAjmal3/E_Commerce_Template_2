@@ -70,7 +70,6 @@ public class HomePageFragment extends Fragment {
     TextView headTxt1,headTxt2,viewAllDressTxtBtn,topSellingViewAllTxtBtn,brandNumCountTxt,brandNumCountBelowTxt,qualityNumCountTxt,customerNumCountTxt;
     SessionManager sessionManager;
     String authToken;
-    ImageView rightIndicatorNewArrival,rightIndicatorTopSelling;
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -277,8 +276,6 @@ public class HomePageFragment extends Fragment {
             public void onAnimationRepeat(Animator animation) {}
         });
 
-        rightIndicatorTopSelling = view.findViewById(R.id.rightIndicatorTopSelling);
-        rightIndicatorNewArrival = view.findViewById(R.id.rightIndicatorNewArrival);
         newArrivalRecycler = view.findViewById(R.id.newArrivalRecyclerView);
         topSellingRecycler = view.findViewById(R.id.topSellingRecyclerView);
         browseByDressRecycler = view.findViewById(R.id.browseByDressRecyclerView);
@@ -304,41 +301,6 @@ public class HomePageFragment extends Fragment {
         browseByDressRecycler.setAdapter(new BrowseByDressStyleAdapter(browseByDressList,HomePageFragment.this));
         newArrivalRecycler.setAdapter(new ProductDetailsForFragmentAdapter(newArrivalList,HomePageFragment.this));
         topSellingRecycler.setAdapter(new ProductDetailsForFragmentAdapter(newArrivalList,HomePageFragment.this));
-
-        // Add Scroll Listener
-        newArrivalRecycler.addOnScrollListener(new RecyclerView.OnScrollListener() {
-            @Override
-            public void onScrolled(@NonNull RecyclerView recyclerView, int dx, int dy) {
-                super.onScrolled(recyclerView, dx, dy);
-
-                int lastVisible = newArrivalLayoutManager.findLastVisibleItemPosition();
-                int totalItems = recyclerView.getAdapter().getItemCount();
-
-                // Show right arrow if there are more items ahead
-                if (lastVisible < totalItems - 1) {
-                    rightIndicatorNewArrival.setVisibility(View.VISIBLE);
-                } else {
-                    rightIndicatorNewArrival.setVisibility(View.GONE);
-                }
-            }
-        });
-        // Add Scroll Listener
-        topSellingRecycler.addOnScrollListener(new RecyclerView.OnScrollListener() {
-            @Override
-            public void onScrolled(@NonNull RecyclerView recyclerView, int dx, int dy) {
-                super.onScrolled(recyclerView, dx, dy);
-
-                int lastVisible = topSellingLayoutManager.findLastVisibleItemPosition();
-                int totalItems = recyclerView.getAdapter().getItemCount();
-
-                // Show right arrow if there are more items ahead
-                if (lastVisible < totalItems - 1) {
-                    rightIndicatorTopSelling.setVisibility(View.VISIBLE);
-                } else {
-                    rightIndicatorTopSelling.setVisibility(View.GONE);
-                }
-            }
-        });
 
         shopNowBtn.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -369,73 +331,81 @@ public class HomePageFragment extends Fragment {
 
     private void getNewArrivalProducts() {
         String newArrivalURL = Constant.BASE_URL + "product/" + sessionManager.getStoreId() + "?pageNumber=1&pageSize=5";
-        Log.e("ProductsURL",newArrivalURL);
+        Log.e("ProductsURL", newArrivalURL);
+
         JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, newArrivalURL, null,
                 new Response.Listener<JSONObject>() {
                     @Override
                     public void onResponse(JSONObject response) {
                         try {
-                            JSONArray dataArray = response.getJSONArray("data");
-                            for (int i = 0; i < dataArray.length(); i++) {
-                                JSONObject productObj = dataArray.getJSONObject(i);
-                                String productId = productObj.getString("_id");
-                                String title = productObj.getString("title");
+                            JSONArray dataArray = response.optJSONArray("data");
+                            if (dataArray != null) {
+                                for (int i = 0; i < dataArray.length(); i++) {
+                                    JSONObject productObj = dataArray.optJSONObject(i);
+                                    if (productObj != null) {
+                                        String productId = productObj.optString("_id", null);
+                                        String title = productObj.optString("title", null);
 
-                                JSONObject slugObj = productObj.getJSONObject("meta");
-                                String slug = slugObj.getString("slug");
+                                        JSONObject slugObj = productObj.optJSONObject("meta");
+                                        String slug = (slugObj != null) ? slugObj.optString("slug", null) : null;
 
-                                String MRP = productObj.getString("MRP");
-                                String price = productObj.getString("price");
+                                        String MRP = productObj.optString("MRP", null);
+                                        String price = productObj.optString("price", null);
 
-                                JSONObject discountObj = productObj.getJSONObject("discount");
-                                String discountAmount = discountObj.getString("amount");
-                                String discountPercentage = discountObj.getString("percentage");
+                                        JSONObject discountObj = productObj.optJSONObject("discount");
+                                        String discountAmount = (discountObj != null) ? discountObj.optString("amount", null) : null;
+                                        String discountPercentage = (discountObj != null) ? discountObj.optString("percentage", null) : null;
 
-                                String stock = productObj.getString("stock");
-                                String description = productObj.getString("description");
+                                        String stock = productObj.optString("stock", null);
+                                        String description = productObj.optString("description", null);
 
-                                String tags = parseTags(productObj.getJSONArray("tags"));
+                                        JSONArray tagsArray = productObj.optJSONArray("tags");
+                                        String tags = (tagsArray != null) ? parseTags(tagsArray) : null;
 
-                                String SKU = productObj.getString("SKU");
+                                        String SKU = productObj.optString("SKU", null);
 
-                                ArrayList<ProductImagesModel> imagesList = new ArrayList<>();
-                                JSONArray imageArray = productObj.getJSONArray("images");
-                                for (int j = 0; j < imageArray.length(); j++) {
-                                    String imageUrl = imageArray.getString(j);
-                                    Log.e("JSONIMG",imageUrl);
-                                    imagesList.add(new ProductImagesModel(imageUrl));
+                                        ArrayList<ProductImagesModel> imagesList = new ArrayList<>();
+                                        JSONArray imageArray = productObj.optJSONArray("images");
+                                        if (imageArray != null) {
+                                            for (int j = 0; j < imageArray.length(); j++) {
+                                                String imageUrl = imageArray.optString(j, null);
+                                                if (imageUrl != null) {
+                                                    Log.e("JSONIMG", imageUrl);
+                                                    imagesList.add(new ProductImagesModel(imageUrl));
+                                                }
+                                            }
+                                        }
+
+                                        String store = productObj.optString("store", null);
+                                        String category = productObj.optString("category", null);
+                                        String inputTag = productObj.optString("inputTag", null);
+
+                                        newArrivalList.add(new ProductDetailsModel(productId, title, slug, MRP, price,
+                                                discountAmount, discountPercentage, stock, description, tags, SKU, store,
+                                                category, inputTag, "4", 0, imagesList));
+                                    }
                                 }
 
-                                String store = productObj.getString("store");
-                                String category = productObj.getString("category");
-                                String inputTag = productObj.getString("inputTag");
-
-                                newArrivalList.add(new ProductDetailsModel(productId,title,slug,MRP,price,
-                                        discountAmount,discountPercentage,stock,description,tags,SKU,store,
-                                        category,inputTag,"4",0,imagesList));
-                            }
-                            if (!newArrivalList.isEmpty()){
-                                if (changingWishListIcon()) {
-                                    newArrivalRecycler.setAdapter(new ProductDetailsForFragmentAdapter(newArrivalList, HomePageFragment.this));
+                                if (!newArrivalList.isEmpty()) {
+                                    if (changingWishListIcon()) {
+                                        newArrivalRecycler.setAdapter(new ProductDetailsForFragmentAdapter(newArrivalList, HomePageFragment.this));
+                                    }
                                 }
                             }
                         } catch (JSONException e) {
-                            throw new RuntimeException(e);
+                            Log.e("JSONError", "Parsing error: " + e.getMessage());
                         }
                     }
                 },
                 new Response.ErrorListener() {
                     @Override
                     public void onErrorResponse(VolleyError error) {
-//                        progressBarDialog.dismiss();
                         String errorMessage = "Error: " + error.toString();
                         if (error.networkResponse != null) {
                             try {
-                                // Parse the error response
                                 String jsonError = new String(error.networkResponse.data);
                                 JSONObject jsonObject = new JSONObject(jsonError);
                                 String message = jsonObject.optString("message", "Unknown error");
-                                // Now you can use the message
                                 Toast.makeText(getContext(), message, Toast.LENGTH_LONG).show();
                             } catch (Exception e) {
                                 e.printStackTrace();
@@ -452,8 +422,10 @@ public class HomePageFragment extends Fragment {
                 return headers;
             }
         };
+
         MySingletonFragment.getInstance(this).addToRequestQueue(jsonObjectRequest);
     }
+
     private String parseTags(JSONArray tagsArray) throws JSONException {
         StringBuilder tags = new StringBuilder();
         for (int j = 0; j < tagsArray.length(); j++) {

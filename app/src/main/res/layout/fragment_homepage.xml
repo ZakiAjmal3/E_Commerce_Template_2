@@ -251,14 +251,6 @@
                     android:layout_height="wrap_content"
                     android:paddingRight="15dp"
                     android:layout_marginRight="5dp"/>
-                <ImageView
-                    android:id="@+id/rightIndicatorNewArrival"
-                    android:layout_width="20dp"
-                    android:layout_height="20dp"
-                    android:src="@drawable/ic_right_arrow"
-                    android:background="?attr/selectableItemBackground"
-                    android:layout_alignParentEnd="true"
-                    android:layout_centerVertical="true"/>
             </RelativeLayout>
             <TextView
                 android:id="@+id/viewAllTxtBtn"
@@ -335,14 +327,6 @@
                 android:layout_height="wrap_content"
                 android:paddingRight="15dp"
                 android:layout_marginRight="5dp"/>
-            <ImageView
-                android:id="@+id/rightIndicatorTopSelling"
-                android:layout_width="20dp"
-                android:layout_height="20dp"
-                android:src="@drawable/ic_right_arrow"
-                android:background="?attr/selectableItemBackground"
-                android:layout_alignParentEnd="true"
-                android:layout_centerVertical="true"/>
             </RelativeLayout>
             <TextView
                 android:id="@+id/topSellingViewAllTxtBtn"

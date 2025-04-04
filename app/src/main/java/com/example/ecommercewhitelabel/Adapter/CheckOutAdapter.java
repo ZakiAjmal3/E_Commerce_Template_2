@@ -1,6 +1,7 @@
 package com.example.ecommercewhitelabel.Adapter;
 
 import android.annotation.SuppressLint;
+import android.app.Dialog;
 import android.content.Context;
 import android.content.Intent;
 import android.view.LayoutInflater;
@@ -20,12 +21,17 @@ import com.example.ecommercewhitelabel.Activities.HomePageActivity;
 import com.example.ecommercewhitelabel.Model.CheckOutModel;
 
 import com.example.ecommercewhitelabel.R;
+import com.example.ecommercewhitelabel.Utils.SessionManager;
 
 import java.util.ArrayList;
 
 public class CheckOutAdapter extends RecyclerView.Adapter<CheckOutAdapter.ViewHolder> {
     ArrayList<CheckOutModel> productDetailsList;
     Context context;
+    int quantity = 1;
+    SessionManager sessionManager;
+    String authToken;
+    Dialog progressBarDialog;
     public CheckOutAdapter(ArrayList<CheckOutModel> productDetailsList, Context context) {
         this.productDetailsList = productDetailsList;
         this.context = context;

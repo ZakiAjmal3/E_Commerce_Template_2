@@ -98,17 +98,9 @@ public class HomePageActivity extends AppCompatActivity {
                 }else if (item.getItemId() == R.id.search){
                     loadFragment(new SearchFragment());
                 }else if (item.getItemId() == R.id.wishlist){
-                    if (sessionManager.isLoggedIn()) {
-                        loadFragment(new WishListFragment());
-                    }else {
-                        startActivity(new Intent(HomePageActivity.this, LoginActivity.class));
-                    }
+                    loadFragment(new WishListFragment());
                 }else if (item.getItemId() == R.id.cart){
-                    if (sessionManager.isLoggedIn()) {
-                        loadFragment(new CartItemFragment());
-                    }else {
-                        startActivity(new Intent(HomePageActivity.this, LoginActivity.class));
-                    }
+                    loadFragment(new CartItemFragment());
                 }else if (item.getItemId() == R.id.profile){
                     if (sessionManager.isLoggedIn()) {
                         loadFragment(new ProfileFragment());

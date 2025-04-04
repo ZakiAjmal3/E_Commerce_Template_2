@@ -29,6 +29,8 @@ import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class SessionManager {
     private Context ctx;
@@ -144,12 +146,12 @@ public class SessionManager {
         }
     }
     // Remove a single item from cart
-    public void removeCartItem(CartItemModel cartItemModel) {
+    public void removeCartItem(String id) {
         ArrayList<CartItemModel> cartList = getCart();
 
         // Remove item using an Iterator (compatible with all Android versions)
         for (int i = 0; i < cartList.size(); i++) {
-            if (cartList.get(i).getProductId().equals(cartItemModel.getProductId())) {
+            if (cartList.get(i).getProductId().equals(id)) {
                 cartList.remove(i);
                 break; // Exit loop after removing the first matching item
             }
@@ -157,7 +159,7 @@ public class SessionManager {
 
         // Save updated list back to SharedPreferences
         String json = gson.toJson(cartList);
-        editor.putString(WISHLIST_KEY, json);
+        editor.putString(CART_KEY, json);
         editor.apply();
     }
     // Remove a single item from wishlist
@@ -254,6 +256,132 @@ public class SessionManager {
                                 e.printStackTrace();
                                 Log.e("JSONParsingError", "Error parsing response: " + e.getMessage());
                             }
+                        }
+                    },
+                    new Response.ErrorListener() {
+                        @Override
+                        public void onErrorResponse(VolleyError error) {
+//                        progressBarDialog.dismiss();
+                            String errorMessage = "Error: " + error.toString();
+                            if (error.networkResponse != null) {
+                                try {
+                                    String jsonError = new String(error.networkResponse.data);
+                                    JSONObject jsonObject = new JSONObject(jsonError);
+                                    String message = jsonObject.optString("message", "Unknown error");
+//                                Toast.makeText(getContext(), message, Toast.LENGTH_LONG).show();
+                                } catch (Exception e) {
+                                    e.printStackTrace();
+                                }
+                            }
+                            Log.e("ExamListError", errorMessage);
+                        }
+                    }) {
+                @Override
+                public Map<String, String> getHeaders() throws AuthFailureError {
+                    Map<String, String> headers = new HashMap<>();
+                    headers.put("Content-Type", "application/json");
+                    headers.put("Authorization", "Bearer " + getUserData().get("authToken"));
+                    return headers;
+                }
+            };
+            MySingleton.getInstance(ctx.getApplicationContext()).addToRequestQueue(jsonObjectRequest);
+        }
+    }
+    public void startAddingItemToCart(){
+        ArrayList<CartItemModel> cart = new ArrayList<>();
+        cart = getCart();
+
+        ExecutorService executor = Executors.newFixedThreadPool(3); // Run 3 APIs in parallel
+
+        for (CartItemModel item : cart) {
+            executor.execute(() -> sendCartItemToServer(item.getProductId()));
+        }
+
+        executor.shutdown(); // Shutdown after execution
+    }
+    private void sendCartItemToServer(String productId) {
+        String wishlistURL = Constant.BASE_URL + "cart";
+        JSONObject requestBody = new JSONObject();
+        try {
+            requestBody.put("productId", productId);
+            requestBody.put("quantity", getUserData().get("userId"));
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.POST, wishlistURL, requestBody,
+                response -> Log.d("WishlistAPI", "Added: " + productId),
+                error -> Log.e("WishlistAPI_Error", "Failed for: " + productId + " | Error: " + error.toString())) {
+            @Override
+            public Map<String, String> getHeaders() throws AuthFailureError {
+                Map<String, String> headers = new HashMap<>();
+                headers.put("Content-Type", "application/json");
+                headers.put("Authorization", "Bearer " + getUserData().get("authToken"));
+                return headers;
+            }
+        };
+
+        MySingleton.getInstance(ctx.getApplicationContext()).addToRequestQueue(jsonObjectRequest);
+    }
+    public void startAddingItemToWishlist(){
+        ArrayList<ProductDetailsModel> wishList = new ArrayList<>();
+        wishList = getWishList();
+
+        ExecutorService executor = Executors.newFixedThreadPool(3); // Run 3 APIs in parallel
+
+        for (ProductDetailsModel item : wishList) {
+            executor.execute(() -> sendWishlistItemToServer(item.getProductId()));
+        }
+
+        executor.shutdown(); // Shutdown after execution
+    }
+    private void sendWishlistItemToServer(String productId) {
+        String wishlistURL = Constant.BASE_URL + "wishlist";
+        JSONObject requestBody = new JSONObject();
+        try {
+            requestBody.put("productId", productId);
+            requestBody.put("userId", getUserData().get("userId"));
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.POST, wishlistURL, requestBody,
+                response -> Log.d("WishlistAPI", "Added: " + productId),
+                error -> Log.e("WishlistAPI_Error", "Failed for: " + productId + " | Error: " + error.toString())) {
+            @Override
+            public Map<String, String> getHeaders() throws AuthFailureError {
+                Map<String, String> headers = new HashMap<>();
+                headers.put("Content-Type", "application/json");
+                headers.put("Authorization", "Bearer " + getUserData().get("authToken"));
+                return headers;
+            }
+        };
+
+        MySingleton.getInstance(ctx.getApplicationContext()).addToRequestQueue(jsonObjectRequest);
+    }
+    public void addCartToServer(){
+        ArrayList<CartItemModel> cartList = new ArrayList<>();
+        cartList = getCart();
+
+        JSONArray wishListIds = new JSONArray();
+        for (CartItemModel item : cartList) {
+            wishListIds.put(item.getProductId());
+        }
+        String cartListURL = Constant.BASE_URL + "cart";
+
+        JSONObject requestBody = new JSONObject();
+        try {
+            requestBody.put("productIds", wishListIds);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+        if (isLoggedIn()) {
+            JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.POST, cartListURL, requestBody,
+                    new Response.Listener<JSONObject>() {
+                        @Override
+                        public void onResponse(JSONObject response) {
+                            getCartFromServer();
                         }
                     },
                     new Response.ErrorListener() {

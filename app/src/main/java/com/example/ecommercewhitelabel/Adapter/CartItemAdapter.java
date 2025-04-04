@@ -128,11 +128,17 @@ public class CartItemAdapter extends RecyclerView.Adapter<CartItemAdapter.ViewHo
                 progressBarDialog.getWindow().setGravity(Gravity.CENTER); // Center the dialog
                 progressBarDialog.getWindow().setLayout(WindowManager.LayoutParams.WRAP_CONTENT, WindowManager.LayoutParams.WRAP_CONTENT); // Adjust the size
                 progressBarDialog.show();
-                deleteItem(position);
-//                productDetailsList.remove(position);
-//                notifyDataSetChanged();
-//                ((CartItemFragment) context).setOrderSummaryDetails();
-//                ((CartItemFragment) context).checkCartItemArraySize();
+                if (sessionManager.isLoggedIn()) {
+                    deleteItem(position);
+                }else {
+                    sessionManager.removeCartItem(productDetailsList.get(position).getProductId());
+                    productDetailsList.remove(position);
+                    notifyDataSetChanged();
+                    ((CartItemFragment) context).setOrderSummaryDetails();
+                    ((CartItemFragment) context).checkCartItemArraySize();
+                    setCartCount();
+                    progressBarDialog.dismiss();
+                }
             }
         });
         holder.plus.setOnClickListener(new View.OnClickListener() {
@@ -224,7 +230,7 @@ public class CartItemAdapter extends RecyclerView.Adapter<CartItemAdapter.ViewHo
                     @Override
                     public void onResponse(JSONObject response) {
                         Toast.makeText(context.getContext(), "Item deleted successfully", Toast.LENGTH_SHORT).show();
-                        sessionManager.removeCartItem(productDetailsList.get(position));
+                        sessionManager.removeCartItem(productDetailsList.get(position).getProductId());
                         productDetailsList.remove(position);
                         notifyDataSetChanged();
                         sessionManager.getCartFromServer();

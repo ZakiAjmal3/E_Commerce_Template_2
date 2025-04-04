@@ -83,7 +83,21 @@ public class WishListFragment extends Fragment {
 //        newArrivalList.add(new ProductDetailsModel("Product 4","3000","4.5",0));
 //        newArrivalList.add(new ProductDetailsModel("Product 5","199","1.2",0));
 
-        getWishList();
+        if (sessionManager.isLoggedIn()) {
+            getWishList();
+        }else {
+            newArrivalList = sessionManager.getWishList();
+            if (!newArrivalList.isEmpty()) {
+                wishListRecycler.setAdapter(new ProductDetailsForFragmentAdapter(newArrivalList, WishListFragment.this));
+                mainLayout.setVisibility(View.VISIBLE);
+                noDataLayout.setVisibility(View.GONE);
+                progressBarDialog.dismiss();
+            }else {
+                mainLayout.setVisibility(View.GONE);
+                noDataLayout.setVisibility(View.VISIBLE);
+                progressBarDialog.dismiss();
+            }
+        }
         return  view;
     }
 

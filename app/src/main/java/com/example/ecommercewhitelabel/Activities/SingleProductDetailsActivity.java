@@ -47,6 +47,7 @@ import com.bumptech.glide.Glide;
 import com.example.ecommercewhitelabel.Adapter.CasualMensClothsForActivityAdapter;
 import com.example.ecommercewhitelabel.Adapter.SingleProductPageAdapters.AllImagesRecyclerAdapter;
 import com.example.ecommercewhitelabel.Adapter.SingleProductPageAdapters.TabLayoutAdapter;
+import com.example.ecommercewhitelabel.Model.CartItemModel;
 import com.example.ecommercewhitelabel.Model.HomePageBrowseByDStyleModel;
 import com.example.ecommercewhitelabel.Model.ProductDetailsModel;
 import com.example.ecommercewhitelabel.Model.ProductImagesModel;
@@ -185,29 +186,12 @@ public class SingleProductDetailsActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 if (!sessionManager.isLoggedIn()){
-                    AlertDialog.Builder builder = new AlertDialog.Builder(SingleProductDetailsActivity.this);
-                    AlertDialog dialog = builder.setTitle("Login Required")
-                            .setMessage("Please login to add this item to your cart?")
-                            .setPositiveButton("Proceed to login", (dialog1, which) -> startActivity(new Intent(SingleProductDetailsActivity.this, LoginActivity.class))) // Call addToCart() on "Yes"
-                            .setNegativeButton("Cancel", (dialog1, which) ->
-                                    dialog1.dismiss()) // Close dialog on "Cancel"
-                            .create();
-
-                    // Show the dialog before applying custom styles
-                    dialog.show();
-
-                    // Change background color
-                    dialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.WHITE)); // Yellow background
-
-                    // Change text color of Title & Message
-                    TextView textView = dialog.findViewById(android.R.id.message);
-                    if (textView != null) {
-                        textView.setTextColor(Color.BLACK); // Change message text color
-                    }
-
-                    // Change button text colors
-                    dialog.getButton(AlertDialog.BUTTON_POSITIVE).setTextColor(Color.BLUE);
-                    dialog.getButton(AlertDialog.BUTTON_NEGATIVE).setTextColor(Color.RED);
+                    sessionManager.saveCart(new CartItemModel(null,productIdIntent,thisSingleProductItem.get(0).getProductTitle(),
+                            String.valueOf(quantityInt),thisSingleProductItem.get(0).getSlug(),thisSingleProductItem.get(0).getProductMRP(),thisSingleProductItem.get(0).getProductPrice(),
+                            thisSingleProductItem.get(0).getDiscountAmount(),thisSingleProductItem.get(0).getDiscountPercentage(),thisSingleProductItem.get(0).getStock(),thisSingleProductItem.get(0).getDescription(),thisSingleProductItem.get(0).getTags(),
+                            thisSingleProductItem.get(0).getProductSKU(),thisSingleProductItem.get(0).getStore(),thisSingleProductItem.get(0).getCategory(),thisSingleProductItem.get(0).getInputTag(),"4.5f",
+                            0,thisSingleProductItem.get(0).getProductImagesModelsArrList()));
+                    Toast.makeText(SingleProductDetailsActivity.this, "Product Added to cart", Toast.LENGTH_SHORT).show();
                 }else {
                     addToCart();
                 }

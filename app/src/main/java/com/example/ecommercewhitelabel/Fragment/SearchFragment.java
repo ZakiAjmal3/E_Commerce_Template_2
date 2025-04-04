@@ -216,7 +216,6 @@ public class SearchFragment extends Fragment {
                                     }
                             } else {
                                 noDataLayout.setVisibility(View.VISIBLE);
-                                dressNestedScroll.setVisibility(View.GONE);
                             }
                         } catch (JSONException e) {
                             e.printStackTrace();

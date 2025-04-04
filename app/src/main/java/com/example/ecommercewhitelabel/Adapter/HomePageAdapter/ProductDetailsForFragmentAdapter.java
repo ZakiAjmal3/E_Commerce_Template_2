@@ -131,14 +131,29 @@ public class ProductDetailsForFragmentAdapter extends RecyclerView.Adapter<Produ
                 setWishlistCount();
                 int state;
                 state = productDetailsList.get(position).getWishListImgToggle();
-                if (state == 0) {
-                    addToWishList(position);
-                    holder.wishlistImg.setImageResource(R.drawable.ic_heart_red);
-                    productDetailsList.get(position).setWishListImgToggle(1);
+                if (sessionManager.isLoggedIn()) {
+                    if (state == 0) {
+                        addToWishList(position);
+                        holder.wishlistImg.setImageResource(R.drawable.ic_heart_red);
+                        productDetailsList.get(position).setWishListImgToggle(1);
+                    } else {
+                        removeFromWishList(position);
+                        holder.wishlistImg.setImageResource(R.drawable.ic_heart_grey);
+                        productDetailsList.get(position).setWishListImgToggle(0);
+                    }
                 }else {
-                    removeFromWishList(position);
-                    holder.wishlistImg.setImageResource(R.drawable.ic_heart_grey);
-                    productDetailsList.get(position).setWishListImgToggle(0);
+                    if (state == 0) {
+                        sessionManager.saveWishList(productDetailsList.get(position));
+                        holder.wishlistImg.setImageResource(R.drawable.ic_heart_red);
+                        productDetailsList.get(position).setWishListImgToggle(1);
+                        Toast.makeText(context.getContext(), "Item added to WishList", Toast.LENGTH_SHORT).show();
+                    } else {
+                        sessionManager.removeWishListItem(productDetailsList.get(position).getProductId());
+                        holder.wishlistImg.setImageResource(R.drawable.ic_heart_grey);
+                        productDetailsList.get(position).setWishListImgToggle(0);
+                        Toast.makeText(context.getContext(), "Item removed from WishList", Toast.LENGTH_SHORT).show();
+
+                    }
                 }
             }
         });
@@ -161,7 +176,15 @@ public class ProductDetailsForFragmentAdapter extends RecyclerView.Adapter<Produ
                     progressBarDialog.getWindow().setGravity(Gravity.CENTER); // Center the dialog
                     progressBarDialog.getWindow().setLayout(WindowManager.LayoutParams.WRAP_CONTENT, WindowManager.LayoutParams.WRAP_CONTENT); // Adjust the size
                     progressBarDialog.show();
-                    removeFromWishList(position);
+                    if (sessionManager.isLoggedIn()) {
+                        removeFromWishList(position);
+                    }else {
+                        sessionManager.removeWishListItem(productDetailsList.get(position).getProductId());
+                        productDetailsList.remove(position);
+                        notifyDataSetChanged();
+                        ((WishListFragment) context).checkWishListItemArraySize();
+                        progressBarDialog.dismiss();
+                    }
                 }
             });
 

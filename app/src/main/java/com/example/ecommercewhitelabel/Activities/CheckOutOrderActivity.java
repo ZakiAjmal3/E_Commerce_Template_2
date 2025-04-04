@@ -138,7 +138,7 @@ public class CheckOutOrderActivity extends AppCompatActivity {
 
         couponDiscountStr = String.valueOf(getIntent().getIntExtra("couponDiscount",0));
         Log.e("true",couponDiscountStr);
-        if (!couponDiscountStr.equals(0)){
+        if (!couponDiscountStr.equals("0")){
             promoCodeDiscountDisplayTxt.setText("-₹" + couponDiscountStr);
             promoCodeDiscountLL.setVisibility(View.VISIBLE);
         }
@@ -306,7 +306,7 @@ public class CheckOutOrderActivity extends AppCompatActivity {
         couponDiscount = Integer.parseInt(couponDiscountStr);
         for (int i = 0; i < checkOutModelArrayList.size(); i++) {
             totalAmount += Integer.parseInt(checkOutModelArrayList.get(i).getProductMRP()) * Integer.parseInt(cartItemModelArrayList.get(i).getProductQuantity());
-            discount += Integer.parseInt(cartItemModelArrayList.get(i).getDiscountAmount());
+            discount += Integer.parseInt(cartItemModelArrayList.get(i).getDiscountAmount()) * Integer.parseInt(cartItemModelArrayList.get(i).getProductQuantity());
         }
         if (totalAmount > 500){
             finalTotalAmount = totalAmount;

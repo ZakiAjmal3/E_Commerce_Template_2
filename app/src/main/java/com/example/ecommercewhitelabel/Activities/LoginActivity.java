@@ -184,6 +184,8 @@ public class LoginActivity extends AppCompatActivity {
                             String email = jsonObject.getString("email");
                             String role = jsonObject.getString("role");
                             sessionManager.saveUserDetails(fullName,email,role);
+                            sessionManager.startAddingItemToWishlist();
+                            sessionManager.startAddingItemToCart();
                             startActivity(new Intent(LoginActivity.this,HomePageActivity.class));
                             Toast.makeText(LoginActivity.this, "Login SuccessFull", Toast.LENGTH_SHORT).show();
                             finish();

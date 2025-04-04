@@ -134,6 +134,7 @@ public class OrderSingleViewActivity extends AppCompatActivity {
     }
     Dialog drawerDialog;
     ImageView crossBtn;
+    TextView cancelOrderBtn;
     private RecyclerView recyclerView;
     private TrackingOrderTimelineAdapter adapter;
     private List<TrackingOrderTimelineModel> orderStages;
@@ -147,11 +148,19 @@ public class OrderSingleViewActivity extends AppCompatActivity {
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
 
         crossBtn = drawerDialog.findViewById(R.id.crossBtn);
+        cancelOrderBtn = drawerDialog.findViewById(R.id.cancelOrderBtn);
 
         crossBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 drawerDialog.dismiss();
+            }
+        });
+
+        cancelOrderBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                cancelOrder();
             }
         });
 
@@ -176,6 +185,56 @@ public class OrderSingleViewActivity extends AppCompatActivity {
             drawerDialog.getWindow().setStatusBarColor(R.color.white);
         }
     }
+
+    private void cancelOrder() {
+        String orderURL = Constant.BASE_URL + "order/cancel";
+
+        JSONObject jsonObject = new JSONObject();
+        try {
+            jsonObject.put("orderId", orderIdStr);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.POST, orderURL, jsonObject,
+                new Response.Listener<JSONObject>() {
+                    @Override
+                    public void onResponse(JSONObject response) {
+                        Toast.makeText(OrderSingleViewActivity.this, "Order Cancelled SuccessFully", Toast.LENGTH_SHORT).show();
+                        onBackPressed();
+                    }
+                },
+                new Response.ErrorListener() {
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+                        progressBarDialog.dismiss();
+                        String errorMessage = "Error: " + error.toString();
+                        if (error.networkResponse != null) {
+                            try {
+                                // Parse the error response
+                                String jsonError = new String(error.networkResponse.data);
+                                JSONObject jsonObject = new JSONObject(jsonError);
+                                String message = jsonObject.optString("message", "Unknown error");
+                                // Now you can use the message
+                                Toast.makeText(OrderSingleViewActivity.this, message, Toast.LENGTH_LONG).show();
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            }
+                        }
+                        Log.e("ExamListError", errorMessage);
+                    }
+                }) {
+            @Override
+            public Map<String, String> getHeaders() throws AuthFailureError {
+                Map<String, String> headers = new HashMap<>();
+                headers.put("Content-Type", "application/json");
+                headers.put("Authorization", "Bearer " + authToken);
+                return headers;
+            }
+        };
+        MySingleton.getInstance(this).addToRequestQueue(jsonObjectRequest);
+    }
+
     private void getOrderById() {
         String orderURL = Constant.BASE_URL + "order/" + orderIdStr;
         JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, orderURL, null,

@@ -38,10 +38,10 @@ public class MainActivity extends AppCompatActivity {
         logo = findViewById(R.id.logo);
 
         sessionManager = new SessionManager(MainActivity.this);
-        sessionManager.clearWishList();
-        sessionManager.clearCart();
-        sessionManager.getWishlistFromServer();
-        sessionManager.getCartFromServer();
+        if (sessionManager.isLoggedIn()) {
+            sessionManager.startAddingItemToWishlist();
+            sessionManager.startAddingItemToCart();
+        }
 
         getWindow().setStatusBarColor(ContextCompat.getColor(MainActivity.this, R.color.white));
 //        getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR);

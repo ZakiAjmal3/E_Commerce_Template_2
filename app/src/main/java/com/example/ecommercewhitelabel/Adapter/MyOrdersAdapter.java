@@ -85,6 +85,18 @@ public class MyOrdersAdapter extends RecyclerView.Adapter<MyOrdersAdapter.ViewHo
                 .error(R.drawable.no_image)
                 .into(holder.productImg);
 
+        holder.itemView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(context, OrderSingleViewActivity.class);
+//                    intent.putExtra("orderStatus", productDetailsList.get(getAdapterPosition()).getOrderStatus());
+                intent.putExtra("orderDate", holder.orderDateTxt.getText().toString());
+                intent.putExtra("orderId", productDetailsList.get(position).getOrderId());
+//                    intent.putExtra("orderProductTitle", productDetailsList.get(getAdapterPosition()).getProductTitle());
+//                    intent.putExtra("orderPrice", productDetailsList.get(getAdapterPosition()).getFinalAmount());
+                context.startActivity(intent);
+            }
+        });
     }
 
     @Override
@@ -103,18 +115,6 @@ public class MyOrdersAdapter extends RecyclerView.Adapter<MyOrdersAdapter.ViewHo
             orderPrice = itemView.findViewById(R.id.orderPrice);
             productImg = itemView.findViewById(R.id.productImg);
 
-            itemView.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    Intent intent = new Intent(context, OrderSingleViewActivity.class);
-//                    intent.putExtra("orderStatus", productDetailsList.get(getAdapterPosition()).getOrderStatus());
-                    intent.putExtra("orderDate", productDetailsList.get(getAdapterPosition()).getOrderDate());
-                    intent.putExtra("orderId", productDetailsList.get(getAdapterPosition()).getOrderId());
-//                    intent.putExtra("orderProductTitle", productDetailsList.get(getAdapterPosition()).getProductTitle());
-//                    intent.putExtra("orderPrice", productDetailsList.get(getAdapterPosition()).getFinalAmount());
-                    context.startActivity(intent);
-                }
-            });
         }
     }
 }

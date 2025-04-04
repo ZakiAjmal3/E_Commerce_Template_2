@@ -123,7 +123,22 @@ public class CartItemFragment extends Fragment {
         promoCodeET = view.findViewById(R.id.promoCodeET);
         promoCodeDiscountLL = view.findViewById(R.id.promoCodeDiscountLL);
 
-        getCart();
+        if (sessionManager.isLoggedIn()) {
+            getCart();
+        }else {
+            cartItemModelArrayList = sessionManager.getCart();
+            if (!cartItemModelArrayList.isEmpty()) {
+                cartRecyclerView.setAdapter(new CartItemAdapter(cartItemModelArrayList, CartItemFragment.this));
+                mainLayout.setVisibility(View.VISIBLE);
+                noDataLayout.setVisibility(View.GONE);
+                progressBarDialog.dismiss();
+                setOrderSummaryDetails();
+            }else {
+                mainLayout.setVisibility(View.GONE);
+                noDataLayout.setVisibility(View.VISIBLE);
+                progressBarDialog.dismiss();
+            }
+        }
         setUpCouponDialog();
 //        setOrderSummaryDetails();
 
@@ -291,8 +306,8 @@ public class CartItemFragment extends Fragment {
         return tags.toString();
     }
     private void getCoupons() {
-        String examCategoryURL = Constant.BASE_URL + "discount?storeId=67d2b3da82e71e00672df277";
-        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, examCategoryURL, null,
+        String couponURL = Constant.BASE_URL + "discount?storeId=67d2b3da82e71e00672df277";
+        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, couponURL, null,
                 new Response.Listener<JSONObject>() {
                     @Override
                     public void onResponse(JSONObject response) {
@@ -362,7 +377,7 @@ public class CartItemFragment extends Fragment {
             for (int i = 0; i < cartItemModelArrayList.size(); i++) {
                 totalProductQuantity+= Integer.parseInt(cartItemModelArrayList.get(i).getProductQuantity());
                 totalAmount += Integer.parseInt(cartItemModelArrayList.get(i).getProductMRP()) * Integer.parseInt(cartItemModelArrayList.get(i).getProductQuantity());
-                discount += Integer.parseInt(cartItemModelArrayList.get(i).getDiscountAmount());
+                discount += Integer.parseInt(cartItemModelArrayList.get(i).getDiscountAmount()) * Integer.parseInt(cartItemModelArrayList.get(i).getProductQuantity());
             }
             if (totalAmount > 500) {
                 finalTotalAmount = totalAmount;

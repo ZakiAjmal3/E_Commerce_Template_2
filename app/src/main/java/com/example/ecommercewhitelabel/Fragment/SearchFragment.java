@@ -196,12 +196,15 @@ public class SearchFragment extends Fragment {
                                     String category = productObj.optString("category", null);
                                     String inputTag = productObj.optString("inputTag", null);
 
-                                    casualDressArrayList.add(new ProductDetailsModel(
+                                    ProductDetailsModel model = new ProductDetailsModel(
                                             productId, title, slug, MRP, price, discountAmount, discountPercentage,
-                                            stock, description, tags, SKU, store, category, inputTag, "4", 0, imagesList
-                                    ));
+                                            stock, description, tags, SKU, store, category, inputTag, "4", 0, imagesList);
+                                    if (!isProductAlreadyInList(productId)) {
+                                        casualDressArrayList.add(model);
+                                    }
                                 }
                             }
+                            Log.e("Array List", casualDressArrayList.toString());
                             if (!casualDressArrayList.isEmpty()) {
                                 if (changingWishListIcon())
                                     if (casualMensClothsForActivityAdapter == null) {
@@ -213,9 +216,15 @@ public class SearchFragment extends Fragment {
                                         progressBarDialog.dismiss();
                                     }else {
                                         casualMensClothsForActivityAdapter.notifyDataSetChanged();
+                                        noDataLayout.setVisibility(View.GONE);
+                                        dressNestedScroll.setVisibility(View.VISIBLE);
+                                        searchingRecycler.setVisibility(View.VISIBLE);
+                                        nextItemLoadingProgressBar.setVisibility(View.GONE);
+                                        progressBarDialog.dismiss();
                                     }
                             } else {
                                 noDataLayout.setVisibility(View.VISIBLE);
+                                searchingRecycler.setVisibility(View.GONE);
                             }
                         } catch (JSONException e) {
                             e.printStackTrace();
@@ -250,6 +259,14 @@ public class SearchFragment extends Fragment {
         };
 
         MySingletonFragment.getInstance(this).addToRequestQueue(jsonObjectRequest);
+    }
+    private boolean isProductAlreadyInList(String productId) {
+        for (ProductDetailsModel model : casualDressArrayList) {
+            if (model.getProductId().equals(productId)) {
+                return true;
+            }
+        }
+        return false;
     }
     private boolean changingWishListIcon() {
         ArrayList<ProductDetailsModel> wishlistItem = new ArrayList<>();

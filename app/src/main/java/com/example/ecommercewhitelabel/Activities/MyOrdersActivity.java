@@ -161,8 +161,18 @@ public class MyOrdersActivity extends AppCompatActivity {
 
     private void getAllOrders() {
         String filter = "",status = "";
-        if (!selectedFilterItem[0].equals("All")){
-            filter = selectedFilterItem[0];
+        if (selectedFilterItem[0].equals("All")){
+            filter = "";
+        }else if (selectedFilterItem[0].equals("1 months ago")){
+            filter = "30d";
+        }else if (selectedFilterItem[0].equals("3 months ago")){
+            filter = "90d";
+        }else if (selectedFilterItem[0].equals("6 months ago")){
+            filter = "180d";
+        }else if (selectedFilterItem[0].equals("2025")){
+            filter = "2025";
+        }else if (selectedFilterItem[0].equals("2024")){
+            filter = "2024";
         }
         if (!selectedStatusItem[0].equals("All")) {
             status = selectedStatusItem[0];

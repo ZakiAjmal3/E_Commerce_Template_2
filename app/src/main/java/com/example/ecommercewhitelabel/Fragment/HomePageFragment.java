@@ -70,6 +70,8 @@ public class HomePageFragment extends Fragment {
     TextView headTxt1,headTxt2,viewAllDressTxtBtn,topSellingViewAllTxtBtn,brandNumCountTxt,brandNumCountBelowTxt,qualityNumCountTxt,customerNumCountTxt;
     SessionManager sessionManager;
     String authToken;
+    private static boolean hasAnimated = false;
+
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -100,9 +102,7 @@ public class HomePageFragment extends Fragment {
         starOne = view.findViewById(R.id.starOne);
         starTwo = view.findViewById(R.id.starTwo);
 
-        // Set up the handler to repeat the animation
         handler = new Handler();
-        handler2 = new Handler();
         // Create a runnable that will perform the rotation
         rotationRunnable = new Runnable() {
             @Override
@@ -120,162 +120,188 @@ public class HomePageFragment extends Fragment {
         };
         handler.post(rotationRunnable);
 
+        if (!hasAnimated) {
+            // Set up the handler to repeat the animation
+            handler2 = new Handler();
+
 // Create a runnable for continuous translation animation
-        rotationRunnable2 = new Runnable() {
-            @Override
-            public void run() {
-                ObjectAnimator translateXAnim1 = ObjectAnimator.ofFloat(brandLogoLinearLayout, "translationX", 1000f, -1700f);
-                translateXAnim1.setDuration(5000);
+            rotationRunnable2 = new Runnable() {
+                @Override
+                public void run() {
+                    ObjectAnimator translateXAnim1 = ObjectAnimator.ofFloat(brandLogoLinearLayout, "translationX", 1000f, -1700f);
+                    translateXAnim1.setDuration(5000);
 
-                // Add listener to restart animation on completion
-                translateXAnim1.addListener(new AnimatorListenerAdapter() {
-                    @Override
-                    public void onAnimationEnd(Animator animation) {
-                        // Restart animation immediately
-                        handler.post(rotationRunnable2);
-                    }
-                });
+                    // Add listener to restart animation on completion
+                    translateXAnim1.addListener(new AnimatorListenerAdapter() {
+                        @Override
+                        public void onAnimationEnd(Animator animation) {
+                            // Restart animation immediately
+                            handler2.post(rotationRunnable2);
+                        }
+                    });
 
-                translateXAnim1.start();
-            }
-        };
+                    translateXAnim1.start();
+                }
+            };
 // Start the first animation
-        handler.post(rotationRunnable2);
+            handler2.post(rotationRunnable2);
 
 // Calling the animateCount function for each TextView
-        animateCount(brandNumCountTxt, 200, 30); // Brand count with slower update
-        animateCount(qualityNumCountTxt, 2000, 3); // Quality count with even slower update
-        animateCount(customerNumCountTxt, 3000, 3); // Customer count with even slower update
+            animateCount(brandNumCountTxt, 200, 30); // Brand count with slower update
+            animateCount(qualityNumCountTxt, 2000, 3); // Quality count with even slower update
+            animateCount(customerNumCountTxt, 3000, 3); // Customer count with even slower update
 
 // Animation for headTxt1 (Right corner tilt + move from middle to top)
-        ObjectAnimator rotateAnim = ObjectAnimator.ofFloat(headTxt1, "rotation", 45f, 0f); // Tilting effect
-        ObjectAnimator translateYAnim1 = ObjectAnimator.ofFloat(headTxt1, "translationY", 1000f, 0f); // Move upwards
-        ObjectAnimator translateXAnim1 = ObjectAnimator.ofFloat(headTxt1, "translationX", 500f, 0f); // Move from right corner to center
+            ObjectAnimator rotateAnim = ObjectAnimator.ofFloat(headTxt1, "rotation", 45f, 0f); // Tilting effect
+            ObjectAnimator translateYAnim1 = ObjectAnimator.ofFloat(headTxt1, "translationY", 1000f, 0f); // Move upwards
+            ObjectAnimator translateXAnim1 = ObjectAnimator.ofFloat(headTxt1, "translationX", 500f, 0f); // Move from right corner to center
 
 // Setting duration and interpolator
-        rotateAnim.setDuration(500); // 1 second
-        translateYAnim1.setDuration(500); // 1 second
-        translateXAnim1.setDuration(500); // 1 second
+            rotateAnim.setDuration(500); // 1 second
+            translateYAnim1.setDuration(500); // 1 second
+            translateXAnim1.setDuration(500); // 1 second
 
 // Create an AnimatorSet for headTxt1
-        AnimatorSet animatorSet1 = new AnimatorSet();
-        animatorSet1.playTogether(rotateAnim, translateYAnim1, translateXAnim1); // Play together for smoother animation
-        animatorSet1.setInterpolator(new DecelerateInterpolator()); // Smooth animation
-        animatorSet1.start();
+            AnimatorSet animatorSet1 = new AnimatorSet();
+            animatorSet1.playTogether(rotateAnim, translateYAnim1, translateXAnim1); // Play together for smoother animation
+            animatorSet1.setInterpolator(new DecelerateInterpolator()); // Smooth animation
+            animatorSet1.start();
 
 // When headTxt1 finishes, make headTxt2 visible and animate it
-        animatorSet1.addListener(new Animator.AnimatorListener() {
-            @Override
-            public void onAnimationStart(Animator animation) {}
+            animatorSet1.addListener(new Animator.AnimatorListener() {
+                @Override
+                public void onAnimationStart(Animator animation) {
+                }
 
-            @Override
-            public void onAnimationEnd(Animator animation) {
-                // Make headTxt2 visible after headTxt1 finishes its animation
-                headTxt2.setVisibility(View.VISIBLE);
+                @Override
+                public void onAnimationEnd(Animator animation) {
+                    // Make headTxt2 visible after headTxt1 finishes its animation
+                    headTxt2.setVisibility(View.VISIBLE);
 
-                // Animation for headTxt2 (Bottom to Top)
-                ObjectAnimator translateYAnim2 = ObjectAnimator.ofFloat(headTxt2, "translationY", 500f, 0f); // Move upwards
-                translateYAnim2.setDuration(500); // 1 second
-                translateYAnim2.setInterpolator(new DecelerateInterpolator()); // Smooth animation
-                translateYAnim2.start();
+                    // Animation for headTxt2 (Bottom to Top)
+                    ObjectAnimator translateYAnim2 = ObjectAnimator.ofFloat(headTxt2, "translationY", 500f, 0f); // Move upwards
+                    translateYAnim2.setDuration(500); // 1 second
+                    translateYAnim2.setInterpolator(new DecelerateInterpolator()); // Smooth animation
+                    translateYAnim2.start();
 
-                // When headTxt2 finishes, make btnShopNow visible and animate it
-                translateYAnim2.addListener(new Animator.AnimatorListener() {
-                    @Override
-                    public void onAnimationStart(Animator animation) {}
+                    // When headTxt2 finishes, make btnShopNow visible and animate it
+                    translateYAnim2.addListener(new Animator.AnimatorListener() {
+                        @Override
+                        public void onAnimationStart(Animator animation) {
+                        }
 
-                    @Override
-                    public void onAnimationEnd(Animator animation) {
-                        // Make btnShopNow visible after headTxt2 finishes its animation
-                        shopNowBtn.setVisibility(View.VISIBLE);
+                        @Override
+                        public void onAnimationEnd(Animator animation) {
+                            // Make btnShopNow visible after headTxt2 finishes its animation
+                            shopNowBtn.setVisibility(View.VISIBLE);
 
-                        // Animation for btnShopNow (Bottom to Top)
-                        ObjectAnimator translateYAnim3 = ObjectAnimator.ofFloat(shopNowBtn, "translationY", 500f, 0f); // Move upwards
-                        translateYAnim3.setDuration(500); // 1 second
-                        translateYAnim3.setInterpolator(new DecelerateInterpolator()); // Smooth animation
-                        translateYAnim3.start();
+                            // Animation for btnShopNow (Bottom to Top)
+                            ObjectAnimator translateYAnim3 = ObjectAnimator.ofFloat(shopNowBtn, "translationY", 500f, 0f); // Move upwards
+                            translateYAnim3.setDuration(500); // 1 second
+                            translateYAnim3.setInterpolator(new DecelerateInterpolator()); // Smooth animation
+                            translateYAnim3.start();
 
-                        // When headTxt2 finishes, make btnShopNow visible and animate it
-                        translateYAnim3.addListener(new Animator.AnimatorListener() {
-                            @Override
-                            public void onAnimationStart(Animator animation) {}
+                            // When headTxt2 finishes, make btnShopNow visible and animate it
+                            translateYAnim3.addListener(new Animator.AnimatorListener() {
+                                @Override
+                                public void onAnimationStart(Animator animation) {
+                                }
 
-                            @Override
-                            public void onAnimationEnd(Animator animation) {
-                                // Make btnShopNow visible after headTxt2 finishes its animation
-                                countingLLayout.setVisibility(View.VISIBLE);
+                                @Override
+                                public void onAnimationEnd(Animator animation) {
+                                    // Make btnShopNow visible after headTxt2 finishes its animation
+                                    countingLLayout.setVisibility(View.VISIBLE);
 
-                                // Animation for btnShopNow (Bottom to Top)
-                                ObjectAnimator translateYAnim4 = ObjectAnimator.ofFloat(countingLLayout, "translationY", 500f, 0f); // Move upwards
-                                translateYAnim4.setDuration(500); // 1 second
-                                translateYAnim4.setInterpolator(new DecelerateInterpolator()); // Smooth animation
-                                translateYAnim4.start();
+                                    // Animation for btnShopNow (Bottom to Top)
+                                    ObjectAnimator translateYAnim4 = ObjectAnimator.ofFloat(countingLLayout, "translationY", 500f, 0f); // Move upwards
+                                    translateYAnim4.setDuration(500); // 1 second
+                                    translateYAnim4.setInterpolator(new DecelerateInterpolator()); // Smooth animation
+                                    translateYAnim4.start();
 
-                                // When headTxt2 finishes, make btnShopNow visible and animate it
-                                translateYAnim4.addListener(new Animator.AnimatorListener() {
-                                    @Override
-                                    public void onAnimationStart(Animator animation) {}
+                                    // When headTxt2 finishes, make btnShopNow visible and animate it
+                                    translateYAnim4.addListener(new Animator.AnimatorListener() {
+                                        @Override
+                                        public void onAnimationStart(Animator animation) {
+                                        }
 
-                                    @Override
-                                    public void onAnimationEnd(Animator animation) {
-                                        // Make btnShopNow visible after headTxt2 finishes its animation
-                                        imagesRL.setVisibility(View.VISIBLE);
+                                        @Override
+                                        public void onAnimationEnd(Animator animation) {
+                                            // Make btnShopNow visible after headTxt2 finishes its animation
+                                            imagesRL.setVisibility(View.VISIBLE);
 
-                                        // Animation for btnShopNow (Bottom to Top)
-                                        ObjectAnimator translateYAnim5 = ObjectAnimator.ofFloat(imagesRL, "translationY", 500f, 0f); // Move upwards
-                                        translateYAnim5.setDuration(500); // 1 second
-                                        translateYAnim5.setInterpolator(new DecelerateInterpolator()); // Smooth animation
-                                        translateYAnim5.start();
+                                            // Animation for btnShopNow (Bottom to Top)
+                                            ObjectAnimator translateYAnim5 = ObjectAnimator.ofFloat(imagesRL, "translationY", 500f, 0f); // Move upwards
+                                            translateYAnim5.setDuration(500); // 1 second
+                                            translateYAnim5.setInterpolator(new DecelerateInterpolator()); // Smooth animation
+                                            translateYAnim5.start();
 
-                                        // When headTxt2 finishes, make btnShopNow visible and animate it
-                                        translateYAnim5.addListener(new Animator.AnimatorListener() {
-                                            @Override
-                                            public void onAnimationStart(Animator animation) {}
+                                            // When headTxt2 finishes, make btnShopNow visible and animate it
+                                            translateYAnim5.addListener(new Animator.AnimatorListener() {
+                                                @Override
+                                                public void onAnimationStart(Animator animation) {
+                                                }
 
-                                            @Override
-                                            public void onAnimationEnd(Animator animation) {
-                                               remainingRL.setVisibility(View.VISIBLE);
-                                            }
+                                                @Override
+                                                public void onAnimationEnd(Animator animation) {
+                                                    remainingRL.setVisibility(View.VISIBLE);
+                                                    hasAnimated = true;
+                                                }
 
-                                            @Override
-                                            public void onAnimationCancel(Animator animation) {}
+                                                @Override
+                                                public void onAnimationCancel(Animator animation) {
+                                                }
 
-                                            @Override
-                                            public void onAnimationRepeat(Animator animation) {}
-                                        });
-                                    }
+                                                @Override
+                                                public void onAnimationRepeat(Animator animation) {
+                                                }
+                                            });
+                                        }
 
-                                    @Override
-                                    public void onAnimationCancel(Animator animation) {}
+                                        @Override
+                                        public void onAnimationCancel(Animator animation) {
+                                        }
 
-                                    @Override
-                                    public void onAnimationRepeat(Animator animation) {}
-                                });
-                            }
+                                        @Override
+                                        public void onAnimationRepeat(Animator animation) {
+                                        }
+                                    });
+                                }
 
-                            @Override
-                            public void onAnimationCancel(Animator animation) {}
+                                @Override
+                                public void onAnimationCancel(Animator animation) {
+                                }
 
-                            @Override
-                            public void onAnimationRepeat(Animator animation) {}
-                        });
-                    }
+                                @Override
+                                public void onAnimationRepeat(Animator animation) {
+                                }
+                            });
+                        }
 
-                    @Override
-                    public void onAnimationCancel(Animator animation) {}
+                        @Override
+                        public void onAnimationCancel(Animator animation) {
+                        }
 
-                    @Override
-                    public void onAnimationRepeat(Animator animation) {}
-                });
-            }
+                        @Override
+                        public void onAnimationRepeat(Animator animation) {
+                        }
+                    });
+                }
 
-            @Override
-            public void onAnimationCancel(Animator animation) {}
+                @Override
+                public void onAnimationCancel(Animator animation) {
+                }
 
-            @Override
-            public void onAnimationRepeat(Animator animation) {}
-        });
-
+                @Override
+                public void onAnimationRepeat(Animator animation) {
+                }
+            });
+        }else {
+            headTxt2.setVisibility(View.VISIBLE);
+            shopNowBtn.setVisibility(View.VISIBLE);
+            countingLLayout.setVisibility(View.VISIBLE);
+            imagesRL.setVisibility(View.VISIBLE);
+            remainingRL.setVisibility(View.VISIBLE);
+        }
         newArrivalRecycler = view.findViewById(R.id.newArrivalRecyclerView);
         topSellingRecycler = view.findViewById(R.id.topSellingRecyclerView);
         browseByDressRecycler = view.findViewById(R.id.browseByDressRecyclerView);

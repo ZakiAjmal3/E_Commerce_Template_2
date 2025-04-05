@@ -6,6 +6,8 @@ import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.view.Gravity;
 import android.view.MenuItem;
 import android.view.View;
@@ -324,30 +326,61 @@ public class HomePageActivity extends AppCompatActivity {
         return currentFragment;
     }
 
-    public void setWishlistCount(){
+    private final int MAX_RETRY = 5;
+    private final long RETRY_DELAY = 200; // in milliseconds
+    public void setWishlistCount() {
+        setWishlistCountWithRetry(0);
+    }
+    private void setWishlistCountWithRetry(int attempt) {
+        if (attempt >= MAX_RETRY) return;
+
         int count = sessionManager.getWishListCount();
         BadgeDrawable badge = bottomNavigationView.getOrCreateBadge(R.id.wishlist);
-        if (count == 0){
+
+        if (badge == null && attempt < MAX_RETRY) {
+            // Retry after delay
+            new Handler(Looper.getMainLooper()).postDelayed(() -> {
+                setWishlistCountWithRetry(attempt + 1);
+            }, RETRY_DELAY);
+            return;
+        }
+
+        if (count == 0) {
             badge.setVisible(false);
-        }else {
+        } else {
             badge.setVisible(true);
             badge.setNumber(count);
             badge.setBackgroundColor(ContextCompat.getColor(HomePageActivity.this, R.color.red));
             badge.setBadgeTextColor(ContextCompat.getColor(HomePageActivity.this, R.color.white));
         }
     }
-    public void setCartCount(){
+    public void setCartCount() {
+        setCartCountWithRetry(0);
+    }
+
+    private void setCartCountWithRetry(int attempt) {
+        if (attempt >= MAX_RETRY) return;
+
         int count = sessionManager.getCartCount();
         BadgeDrawable badge = bottomNavigationView.getOrCreateBadge(R.id.cart);
-        if (count == 0){
+
+        if (badge == null && attempt < MAX_RETRY) {
+            new Handler(Looper.getMainLooper()).postDelayed(() -> {
+                setCartCountWithRetry(attempt + 1);
+            }, RETRY_DELAY);
+            return;
+        }
+
+        if (count == 0) {
             badge.setVisible(false);
-        }else {
+        } else {
             badge.setVisible(true);
             badge.setNumber(count);
             badge.setBackgroundColor(ContextCompat.getColor(HomePageActivity.this, R.color.red));
             badge.setBadgeTextColor(ContextCompat.getColor(HomePageActivity.this, R.color.white));
         }
     }
+
     @Override
     protected void onResume() {
         super.onResume();

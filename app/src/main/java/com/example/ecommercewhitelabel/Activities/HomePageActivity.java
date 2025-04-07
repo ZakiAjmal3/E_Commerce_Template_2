@@ -334,6 +334,8 @@ public class HomePageActivity extends AppCompatActivity {
     private void setWishlistCountWithRetry(int attempt) {
         if (attempt >= MAX_RETRY) return;
 
+        sessionManager = new SessionManager(HomePageActivity.this);
+
         int count = sessionManager.getWishListCount();
         BadgeDrawable badge = bottomNavigationView.getOrCreateBadge(R.id.wishlist);
 

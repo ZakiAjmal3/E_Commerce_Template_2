@@ -122,7 +122,7 @@ public class CasualMensClothsForActivityAdapter extends RecyclerView.Adapter<Cas
         holder.wishlistImg.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                setWishlistCount();
+//                setWishlistCount();
                 int state;
                 state = productDetailsList.get(position).getWishListImgToggle();
                 if (state == 0) {

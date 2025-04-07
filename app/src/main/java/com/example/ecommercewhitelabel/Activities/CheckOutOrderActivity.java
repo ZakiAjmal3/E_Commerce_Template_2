@@ -470,10 +470,10 @@ public class CheckOutOrderActivity extends AppCompatActivity {
                 new Response.Listener<JSONObject>() {
                     @Override
                     public void onResponse(JSONObject response) {
-                        progressBarDialog.dismiss();
-                        HomePageActivity obj = new HomePageActivity();
-                        obj.setCartCount();
                         startActivity(new Intent(CheckOutOrderActivity.this, OrderPlacedActivity.class));
+                        finish();
+                        sessionManager.getCartFromServer();
+                        progressBarDialog.dismiss();
                     }
                 },
                 new Response.ErrorListener() {

@@ -55,7 +55,6 @@ public class OrderSingleViewActivity extends AppCompatActivity {
     String orderIdStr,orderDateStr,shippingUserNameStr, shippingAddressLineStr1, shippingAddressLineStr2, shippingAddressLineStr3;
     RecyclerView orderItemsRecyclerView;
     SingleOrderPageItemsAdapter sOrderItemsAdapter;
-    SingleOrderPageItemsModel sOrderItemsModel;
     ArrayList<SingleOrderPageItemsModel> sOrderItemsModelList = new ArrayList<>();
     ImageView backBtn;
     RelativeLayout trackOrderBtn;

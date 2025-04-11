@@ -39,8 +39,6 @@ public class SessionManager {
     private Gson gson;
     private static final String PREF_NAME = "SessionPrefs";
     private static final String DEFAULT_VALUE = "DEFAULT";
-    private static final String KEY_WISHLIST = "wishlist";
-    private static final String KEY_CART = "cart";
     private static final String KEY_STORE_ID = "storeId";
     private static final String KEY_USER_ID = "userId";
     private static final String KEY_AUTH_TOKEN = "authToken";
@@ -189,7 +187,7 @@ public class SessionManager {
         editor.apply();
     }
     public void getWishlistFromServer(){
-        editor.remove(KEY_WISHLIST);
+        editor.remove(WISHLIST_KEY);
         ArrayList<ProductDetailsModel> wishList = new ArrayList<>();
         String wishlistURL = Constant.BASE_URL + "wishlist";
         Log.e("ProductsURL", wishlistURL);
@@ -246,7 +244,7 @@ public class SessionManager {
                                                 stock, description, null, SKU, store, category, inputTag, "4", 1, imagesList
                                         ));
                                     }
-                                    editor.remove(KEY_WISHLIST);
+                                    editor.remove(WISHLIST_KEY  );
                                     String json = gson.toJson(wishList); // Convert to JSON
                                     editor.putString(WISHLIST_KEY, json);
                                     editor.apply();
